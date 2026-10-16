@@ -56,7 +56,7 @@ export default async function ListePage({ params, searchParams }: PageProps<'/ad
       )}
       {sp.ok && <p className="bg-emerald-100 text-emerald-800 px-4 py-2.5 mb-4">Enregistré ✓</p>}
       {sp.supprime && <p className="bg-emerald-100 text-emerald-800 px-4 py-2.5 mb-4">Supprimé ✓</p>}
-      {sp.erreur && <p className="bg-rose-100 text-rose-800 px-4 py-2.5 mb-4">Suppression impossible : cet élément est utilisé ailleurs (matchs, créneaux…).</p>}
+      {sp.erreur && <p className="bg-rose-100 text-rose-800 px-4 py-2.5 mb-4">Suppression impossible : cet élément est encore utilisé ailleurs (ex. une catégorie ou un gymnase rattaché à des équipes ou créneaux).</p>}
 
       <div className="bg-white overflow-x-auto">
         <table className="w-full text-sm">
@@ -81,7 +81,7 @@ export default async function ListePage({ params, searchParams }: PageProps<'/ad
                   <Link href={`/admin/${cle}/${item.id}`} className="text-roi hover:underline mr-4">Modifier</Link>
                   {!r.unique && (
                     <form action={supprimer.bind(null, cle, String(item.id))} className="inline">
-                      <BoutonConfirmer message={`Supprimer ce ${r.singulier} ?`} className="text-rose-600 hover:underline">Supprimer</BoutonConfirmer>
+                      <BoutonConfirmer message={`Supprimer cet élément (${r.singulier}) ?${r.suppression ? `\n\n${r.suppression}` : ''}`} className="text-rose-600 hover:underline">Supprimer</BoutonConfirmer>
                     </form>
                   )}
                 </td>

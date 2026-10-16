@@ -28,6 +28,8 @@ export type Ressource = {
   singulier: string;
   colonnes: Colonne[];
   champs: Champ[];
+  /** Précision ajoutée à la confirmation de suppression */
+  suppression?: string;
   /** Ressource à exemplaire unique (pas de création ni suppression) */
   unique?: boolean;
 };
@@ -77,6 +79,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/equipes',
     titre: 'Équipes',
     singulier: 'équipe',
+    suppression: 'Ses matchs, créneaux et joueurs seront supprimés avec elle.',
     colonnes: [
       { chemin: 'nom', label: 'Nom' },
       { chemin: 'estAjso', label: 'Club', type: 'bool' },
