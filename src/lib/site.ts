@@ -1,5 +1,7 @@
-/** Remplacer par /logo-ajso.png si vous déposez le fichier original dans /public. */
-export const LOGO_SRC = '/logo-ajso.svg';
+/** Logo officiel du club (fond transparent). */
+export const LOGO_SRC = '/logo-ajso.png';
+/** Proportions du logo (largeur / hauteur). */
+export const LOGO_RATIO = 668 / 592;
 
 export type LienNav = { href: string; label: string };
 

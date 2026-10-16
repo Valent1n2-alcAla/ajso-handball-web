@@ -19,8 +19,9 @@ Couleurs issues du logo (raton laveur dans losange) définies dans `src/app/glob
 bleu nuit `#0a0f3c`, bleu roi `#2340c8`, violet `#6b2fa8`, bleu glacier `#9fd8ff`, accent jaune `#ffc629`.
 Typos : Anton (titres), Barlow (texte), IBM Plex Mono (infos).
 
-Le logo est une recréation vectorielle (`public/logo-ajso.svg`). Pour utiliser le fichier original,
-déposez-le dans `public/` et modifiez `LOGO_SRC` dans `src/lib/site.ts`.
+Logo officiel : `public/logo-ajso.png` (fond détouré). Icônes d'onglet : `src/app/icon.png`, `src/app/apple-icon.png`.
+Une version haute définition (SVG ou PNG ≥ 1000 px) peut remplacer `public/logo-ajso.png` sans autre changement
+(ajuster `LOGO_RATIO` dans `src/lib/site.ts` si les proportions diffèrent).
 
 ## Démarrage
 
