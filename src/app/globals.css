@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Direction artistique AJSO Handball — tirée du logo (raton laveur dans losange) :
+ * bleu nuit, bleu roi du lettrage, violet du losange, liseré bleu glacier, accent jaune club.
+ */
+@theme {
+  --color-nuit: #0a0f3c;
+  --color-nuit-2: #121a5c;
+  --color-roi: #2340c8;
+  --color-roi-clair: #4a6bff;
+  --color-violet: #6b2fa8;
+  --color-violet-clair: #9b5fe0;
+  --color-glacier: #9fd8ff;
+  --color-jaune: #ffc629;
+  --color-papier: #f4f5fb;
+  --color-encre: #0a0f3c;
+
+  --font-display: var(--font-anton), "Impact", sans-serif;
+  --font-body: var(--font-barlow), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: var(--color-encre);
+  font-family: var(--font-body);
+}
+
+/* Dégradé signature du losange */
+.bg-losange {
+  background-image: linear-gradient(135deg, var(--color-violet) 0%, var(--color-roi) 55%, var(--color-nuit-2) 100%);
+}
+
+.text-degrade {
+  background-image: linear-gradient(90deg, var(--color-glacier), var(--color-violet-clair));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Motif losanges discret pour les fonds sombres */
+.motif-losanges {
+  background-image:
+    linear-gradient(45deg, rgb(255 255 255 / 0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(255 255 255 / 0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(255 255 255 / 0.03) 75%);
+  background-size: 48px 48px;
+  background-position: 0 0, 0 24px, 24px -24px, -24px 0;
+}
+
+.clip-diagonale {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4vw), 0 100%);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-jaune);
+  outline-offset: 2px;
 }

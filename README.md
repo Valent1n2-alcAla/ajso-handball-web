@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AJSO Handball — Site web
 
-## Getting Started
+Site officiel de l'AJS Ouistreham Handball : Next.js 16 (App Router) + Tailwind CSS 4,
+alimenté par l'API Symfony [`ajso-handball-api`](https://github.com/Valent1n2-alcAla/ajso-handball-api).
 
-First, run the development server:
+## Pages
+
+- **Public** : accueil, équipes (+ fiche équipe), calendrier & résultats (filtres), actualités (+ article),
+  entraînements, le club (valeurs, bureau, gymnases), partenaires, inscriptions & tarifs, contact, mentions légales.
+- **Espace club** `/admin` : tableau de bord, messages de contact, gestion des matchs/scores, actualités,
+  équipes, créneaux, infos club, partenaires, tarifs, gymnases, référentiels.
+
+## Direction artistique
+
+Couleurs issues du logo (raton laveur dans losange) définies dans `src/app/globals.css` :
+bleu nuit `#0a0f3c`, bleu roi `#2340c8`, violet `#6b2fa8`, bleu glacier `#9fd8ff`, accent jaune `#ffc629`.
+Typos : Anton (titres), Barlow (texte), IBM Plex Mono (infos).
+
+Le logo est une recréation vectorielle (`public/logo-ajso.svg`). Pour utiliser le fichier original,
+déposez-le dans `public/` et modifiez `LOGO_SRC` dans `src/lib/site.ts`.
+
+## Démarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local    # API_URL, SITE_URL
+npm install
+npm run dev                   # http://localhost:3000 (l'API doit tourner sur API_URL)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Sécurité admin
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Connexion via l'API (`/api/login`) ; le JWT est stocké dans un cookie `httpOnly` (`secure` en production)
+et n'est jamais exposé au navigateur. Toutes les écritures passent par des Server Actions authentifiées,
+l'API vérifie le rôle `ROLE_ADMIN`.

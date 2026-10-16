@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="AJSO Handball">
+  <defs>
+    <linearGradient id="losange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9b5fe0"/>
+      <stop offset=".5" stop-color="#6b2fa8"/>
+      <stop offset="1" stop-color="#2340c8"/>
+    </linearGradient>
+    <linearGradient id="tete" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9dbe6"/>
+      <stop offset="1" stop-color="#8b8fa3"/>
+    </linearGradient>
+    <linearGradient id="lettres" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a6bff"/>
+      <stop offset="1" stop-color="#2340c8"/>
+    </linearGradient>
+  </defs>
+  <!-- Losange -->
+  <path d="M100 22 178 100 100 178 22 100Z" fill="#9fd8ff"/>
+  <path d="M100 30 170 100 100 170 30 100Z" fill="#0a0f3c"/>
+  <path d="M100 36 164 100 100 164 36 100Z" fill="url(#losange)"/>
+  <!-- Oreilles -->
+  <path d="M58 58 70 92 90 70Z" fill="#0a0f3c"/>
+  <path d="M142 58 130 92 110 70Z" fill="#0a0f3c"/>
+  <path d="M63 66 72 86 84 72Z" fill="#f4f5fb"/>
+  <path d="M137 66 128 86 116 72Z" fill="#f4f5fb"/>
+  <!-- Tête -->
+  <path d="M100 64c-26 0-44 16-46 38 8 18 24 34 46 42 22-8 38-24 46-42-2-22-20-38-46-38Z" fill="url(#tete)" stroke="#0a0f3c" stroke-width="3"/>
+  <!-- Front clair -->
+  <path d="M100 68c-8 6-11 14-11 22h22c0-8-3-16-11-22Z" fill="#f4f5fb"/>
+  <!-- Masque -->
+  <path d="M58 96c10-10 26-12 38-6l4 6 4-6c12-6 28-4 38 6-6 10-18 16-30 14-6-1-10-4-12-8-2 4-6 7-12 8-12 2-24-4-30-14Z" fill="#0a0f3c"/>
+  <!-- Yeux -->
+  <path d="M72 98c6-4 14-4 20 0-6 4-14 4-20 0Z" fill="#fff"/>
+  <path d="M108 98c6-4 14-4 20 0-6 4-14 4-20 0Z" fill="#fff"/>
+  <circle cx="83" cy="98" r="2.6" fill="#0a0f3c"/>
+  <circle cx="117" cy="98" r="2.6" fill="#0a0f3c"/>
+  <!-- Museau + gueule -->
+  <path d="M84 112c4-4 28-4 32 0 2 10-6 22-16 24-10-2-18-14-16-24Z" fill="#f4f5fb" stroke="#0a0f3c" stroke-width="2"/>
+  <path d="M93 112h14l-7 6Z" fill="#0a0f3c"/>
+  <path d="M90 122c4 8 16 8 20 0-2 6-6 10-10 10s-8-4-10-10Z" fill="#c2185b" stroke="#0a0f3c" stroke-width="1.5"/>
+  <path d="M92 122l2 5 2-4Z M108 122l-2 5-2-4Z" fill="#fff"/>
+  <!-- Lettrage -->
+  <g font-family="'Arial Black', Impact, sans-serif" font-weight="900" text-anchor="middle" paint-order="stroke" stroke-linejoin="round">
+    <text x="100" y="40" font-size="34" fill="url(#lettres)" stroke="#0a0f3c" stroke-width="7" letter-spacing="1">AJSO</text>
+    <text x="100" y="40" font-size="34" fill="url(#lettres)" stroke="#fff" stroke-width="2.5" letter-spacing="1">AJSO</text>
+    <text x="100" y="188" font-size="30" fill="url(#lettres)" stroke="#0a0f3c" stroke-width="7" textLength="176" lengthAdjust="spacingAndGlyphs">HANDBALL</text>
+    <text x="100" y="188" font-size="30" fill="url(#lettres)" stroke="#fff" stroke-width="2.5" textLength="176" lengthAdjust="spacingAndGlyphs">HANDBALL</text>
+  </g>
+</svg>
