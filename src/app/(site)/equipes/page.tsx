@@ -1,22 +1,24 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Forme from '@/components/Forme';
 import { PageHero, Section, Vide } from '@/components/ui';
-import { getEquipesClub } from '@/lib/api';
+import { getClassements, getDerniersResultats, getEquipesClub } from '@/lib/api';
+import { bilan } from '@/lib/stats';
 import type { Equipe } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Équipes', description: "Toutes les équipes de l'AJSO Handball, de l'école de hand aux seniors." };
 
-export default async function EquipesPage() {
-  const equipes = await getEquipesClub();
+const ORDRE = ['Adultes', 'Jeunes', 'École de hand'];
 
-  // Regroupement par tranche d'âge, dans l'ordre d'apparition
+export default async function EquipesPage() {
+  const [equipes, resultats, classements] = await Promise.all([getEquipesClub(), getDerniersResultats(), getClassements()]);
+
   const groupes = new Map<string, Equipe[]>();
   for (const e of equipes) {
     const cle = e.categorie?.tranche?.nom ?? 'Autres';
     groupes.set(cle, [...(groupes.get(cle) ?? []), e]);
   }
-  const ordre = ['Adultes', 'Jeunes', 'École de hand'];
-  const rang = (t: string) => (ordre.includes(t) ? ordre.indexOf(t) : ordre.length);
+  const rang = (t: string) => (ORDRE.includes(t) ? ORDRE.indexOf(t) : ORDRE.length);
   const tri = [...groupes.entries()].sort(([a], [b]) => rang(a) - rang(b));
 
   return (
@@ -34,17 +36,45 @@ export default async function EquipesPage() {
                 {tranche}
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {liste.map((e) => (
-                  <Link key={e.id} href={`/equipes/${e.id}`} className="group bg-papier hover:bg-nuit transition-colors p-7 flex flex-col min-h-[190px] relative overflow-hidden">
-                    <span aria-hidden className="absolute -right-12 -top-12 w-32 h-32 rotate-45 bg-losange opacity-10 group-hover:opacity-80 transition-opacity" />
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-violet group-hover:text-glacier">{e.categorie?.nom}</p>
-                    <p className="font-display text-3xl uppercase mt-2 group-hover:text-white">{e.nom}</p>
-                    <p className="mt-auto pt-4 text-sm text-nuit/60 group-hover:text-white/60">
-                      {e.championnat ? e.championnat.nom : 'Pratique sans championnat'}
-                    </p>
-                    <span className="text-sm font-display uppercase tracking-wide text-roi group-hover:text-jaune mt-2">Voir l&apos;équipe →</span>
-                  </Link>
-                ))}
+                {liste.map((e) => {
+                  const b = bilan(resultats.filter((r) => r.equipe.id === e.id));
+                  const place = classements.find((l) => l.estAjso && l.championnat.id === e.championnat?.id);
+                  return (
+                    <Link key={e.id} href={`/equipes/${e.id}`} className="group relative bg-nuit text-white overflow-hidden min-h-[300px] flex flex-col">
+                      {e.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={e.photo} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition duration-500" />
+                      ) : (
+                        <span aria-hidden className="absolute -right-16 -top-16 w-56 h-56 rotate-45 bg-losange opacity-40 group-hover:opacity-80 transition-opacity duration-500" />
+                      )}
+                      <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-nuit via-nuit/60 to-transparent" />
+                      <div className="relative p-7 flex flex-col flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-mono text-[11px] uppercase tracking-widest text-glacier">{e.categorie?.nom}</p>
+                          {place && (
+                            <span className="font-display text-lg bg-jaune text-nuit px-2.5 leading-7">
+                              {place.position}<sup className="text-[10px]">{place.position === 1 ? 'er' : 'e'}</sup>
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-display text-4xl uppercase mt-auto leading-none">{e.nom}</p>
+                        <p className="text-sm text-white/60 mt-2">{e.championnat ? e.championnat.nom : 'Pratique sans championnat'}</p>
+                        <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-white/10 min-h-12">
+                          {b.joues > 0 ? (
+                            <>
+                              <span className="font-mono text-sm">
+                                <span className="text-emerald-400">{b.victoires}V</span> · <span className="text-jaune">{b.nuls}N</span> · <span className="text-rose-400">{b.defaites}D</span>
+                              </span>
+                              <Forme forme={b.forme} taille="sm" />
+                            </>
+                          ) : (
+                            <span className="font-display uppercase tracking-wide text-jaune">Voir l&apos;équipe →</span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           ))}

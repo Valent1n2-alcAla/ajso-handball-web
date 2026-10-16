@@ -136,3 +136,18 @@ export type Produit = Ref & {
   disponible: boolean;
   ordre: number;
 };
+
+export type Poste = 'gardien' | 'ailier-gauche' | 'arriere-gauche' | 'demi-centre' | 'pivot' | 'arriere-droit' | 'ailier-droit' | 'polyvalent';
+
+export type Joueur = Ref & {
+  equipe: Pick<Equipe, 'id' | 'nom'>;
+  prenom: string;
+  /** Nom complet en catégorie adultes, « Prénom N. » pour les jeunes (calculé par l'API) */
+  nomAffiche: string;
+  /** Présent uniquement pour l'admin */
+  nom?: string;
+  numero?: number | null;
+  poste?: Poste | null;
+  photo?: string | null;
+  capitaine: boolean;
+};

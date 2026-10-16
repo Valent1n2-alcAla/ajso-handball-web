@@ -11,7 +11,7 @@ export default async function EditionPage({ params }: PageProps<'/admin/[ressour
   const r = ressourceOu404(cle);
   if (!/^\d+$/.test(id)) notFound();
 
-  const [res, options] = await Promise.all([apiAdmin(`${r.endpoint}/${id}`), chargerOptions(r)]);
+  const [res, options] = await Promise.all([apiAdmin(`${r.lecture ?? r.endpoint}/${id}`), chargerOptions(r)]);
   if (!res.ok) notFound();
   const item = await res.json();
 
@@ -22,6 +22,11 @@ export default async function EditionPage({ params }: PageProps<'/admin/[ressour
       <div className="bg-white p-6 md:p-8 max-w-4xl">
         <FormulaireRessource champs={r.champs} valeurs={valeursInitiales(r, item)} options={options} action={enregistrer.bind(null, cle, id)} />
       </div>
+      {cle === 'equipes' && item.estAjso && (
+        <Link href={`/admin/joueurs?equipe=${id}`} className="inline-block mt-6 bg-nuit text-white font-display uppercase tracking-wide px-5 py-3 hover:bg-roi">
+          Gérer l&apos;effectif →
+        </Link>
+      )}
       {cle === 'albums' && <GestionPhotos albumId={id} photos={item.photos ?? []} couverture={item.couverture} />}
     </>
   );

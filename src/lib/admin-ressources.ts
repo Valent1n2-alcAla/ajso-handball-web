@@ -20,6 +20,10 @@ export type Colonne = { chemin: string; label: string; type?: 'bool' | 'jour' | 
 
 export type Ressource = {
   endpoint: string;
+  /** Endpoint de lecture admin, s'il diffère (ex. nom complet des joueurs) */
+  lecture?: string;
+  /** Filtres acceptés dans l'URL de la liste (?equipe=…) */
+  filtres?: string[];
   titre: string;
   singulier: string;
   colonnes: Colonne[];
@@ -204,6 +208,30 @@ export const RESSOURCES: Record<string, Ressource> = {
 };
 
 Object.assign(RESSOURCES, {
+  joueurs: {
+    endpoint: '/api/joueurs',
+    lecture: '/api/admin/joueurs',
+    filtres: ['equipe'],
+    titre: 'Effectifs',
+    singulier: 'joueur',
+    colonnes: [
+      { chemin: 'equipe.nom', label: 'Équipe' },
+      { chemin: 'numero', label: 'N°' },
+      { chemin: 'prenom', label: 'Prénom' },
+      { chemin: 'nom', label: 'Nom' },
+      { chemin: 'poste', label: 'Poste' },
+      { chemin: 'capitaine', label: 'Capitaine', type: 'bool' },
+    ],
+    champs: [
+      { nom: 'equipe', label: 'Équipe', type: 'relation', source: '/api/equipes?estAjso=true', requis: true },
+      { nom: 'numero', label: 'Numéro', type: 'number' },
+      { nom: 'prenom', label: 'Prénom', type: 'text', requis: true },
+      { nom: 'nom', label: 'Nom', type: 'text', requis: true, aide: 'Publié en entier pour les équipes adultes, réduit à l\'initiale pour les jeunes.' },
+      { nom: 'poste', label: 'Poste', type: 'select', options: [['gardien', 'Gardien'], ['ailier-gauche', 'Ailier gauche'], ['arriere-gauche', 'Arrière gauche'], ['demi-centre', 'Demi-centre'], ['pivot', 'Pivot'], ['arriere-droit', 'Arrière droit'], ['ailier-droit', 'Ailier droit'], ['polyvalent', 'Polyvalent']] },
+      { nom: 'capitaine', label: 'Capitaine', type: 'checkbox', defaut: false },
+      { nom: 'photo', label: 'Photo', type: 'image', large: true, aide: 'Uniquement avec accord (des parents pour les mineurs).' },
+    ],
+  },
   classements: {
     endpoint: '/api/classements',
     titre: 'Classements',
@@ -289,7 +317,7 @@ Object.assign(RESSOURCES, {
 } satisfies Record<string, Ressource>);
 
 export const MENU_ADMIN: { titre: string; cles: string[] }[] = [
-  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'creneaux'] },
+  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'joueurs', 'creneaux'] },
   { titre: 'Vie du club', cles: ['evenements', 'albums', 'produits'] },
   { titre: 'Club', cles: ['club', 'partenaires', 'tarifs', 'gymnases'] },
   { titre: 'Référentiels', cles: ['categories', 'championnats', 'tranches'] },
