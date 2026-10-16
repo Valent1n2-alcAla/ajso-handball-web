@@ -11,7 +11,7 @@ const input = 'w-full bg-white border border-nuit/15 focus:border-violet focus:r
 
 export default function FormulaireRessource({ champs, valeurs, options, action }: {
   champs: Champ[];
-  valeurs: Record<string, string | boolean>;
+  valeurs: Record<string, string | boolean | string[]>;
   options: Record<string, Option[]>;
   action: (prev: EtatFormulaire, fd: FormData) => Promise<EtatFormulaire>;
 }) {
@@ -31,6 +31,18 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
               <input type="checkbox" {...commun} required={false} defaultChecked={v === true} className="w-5 h-5 accent-violet" />
               <span>{c.label}</span>
             </label>
+          );
+        } else if (c.type === 'relations') {
+          const coches = Array.isArray(v) ? v : [];
+          controle = (
+            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 border border-nuit/15 bg-white p-3 max-h-60 overflow-y-auto">
+              {(options[c.nom] ?? []).map((o) => (
+                <label key={o.valeur} className="flex items-center gap-2 py-1 cursor-pointer text-sm">
+                  <input type="checkbox" name={c.nom} value={o.valeur} defaultChecked={coches.includes(o.valeur)} className="w-4 h-4 accent-violet" />
+                  {o.libelle}
+                </label>
+              ))}
+            </div>
           );
         } else if (c.type === 'image') {
           controle = <ChampImage nom={c.nom} valeur={String(v ?? '')} />;

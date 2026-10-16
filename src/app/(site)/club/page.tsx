@@ -23,7 +23,7 @@ export default async function ClubPage() {
       <Section className="grid md:grid-cols-[1fr_1.4fr] gap-12 items-center">
         <div className="relative flex justify-center">
           <div aria-hidden className="absolute inset-8 rotate-45 bg-losange opacity-15" />
-          <Logo size={340} className="relative" />
+          <Logo size={300} className="relative" />
         </div>
         <div>
           <h2 className="font-display text-4xl md:text-5xl uppercase mb-6">Bienvenue chez les Ratons</h2>

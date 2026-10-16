@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatDateCourte, formatDateMatch, formatHoraire, issue, recevant, visiteur } from '@/lib/format';
+import { formatDateCourte, formatDateMatch, formatHoraire, issue, recevant, visiteur, nomCompetition } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
 
 const couleurResultat = { V: 'bg-emerald-500', N: 'bg-jaune', D: 'bg-rose-500' } as const;
@@ -20,7 +20,7 @@ export function CarteMatch({ r }: { r: Rencontre }) {
         <span className="font-mono text-[11px] tracking-widest">{r.domicile ? 'À DOMICILE' : 'EXTÉRIEUR'}</span>
       </div>
       <div className="px-6 pt-6 pb-2 font-mono text-[11px] uppercase tracking-widest text-violet">
-        {r.equipe.categorie?.nom}{r.equipe.championnat ? ` · ${r.equipe.championnat.nom}` : ''}
+        {r.equipe.categorie?.nom}{(r.championnat ?? r.equipe.championnat) ? ` · ${nomCompetition((r.championnat ?? r.equipe.championnat)!)}` : ''}
       </div>
       <div className="px-6 pb-6 flex items-center justify-between gap-4">
         <p className="font-display text-xl md:text-2xl uppercase leading-none flex-1"><NomEquipe r={r} cote="rec" /></p>
@@ -49,7 +49,7 @@ export function LigneMatch({ r, sombre = false }: { r: Rencontre; sombre?: boole
       </div>
       <div className="min-w-0">
         <Link href={`/equipes/${r.equipe.id}`} className={`font-mono text-[10px] uppercase tracking-widest ${sombre ? 'text-glacier' : 'text-violet'} hover:underline`}>
-          {r.equipe.nom}{r.equipe.championnat ? ` · ${r.equipe.championnat.nom}` : ''}{r.journee ? ` · ${r.journee}` : ''}
+          {r.equipe.nom}{(r.championnat ?? r.equipe.championnat) ? ` · ${nomCompetition((r.championnat ?? r.equipe.championnat)!)}` : ''}{r.journee ? ` · ${r.journee}` : ''}
         </Link>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-display text-lg md:text-xl uppercase leading-tight mt-1">
           <NomEquipe r={r} cote="rec" />

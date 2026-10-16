@@ -3,11 +3,11 @@ import { JOURS } from './format';
 export type Champ = {
   nom: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'image';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'relations' | 'image';
   requis?: boolean;
   aide?: string;
   options?: [string, string][];
-  /** Pour type relation : endpoint listant les choix + propriété affichée */
+  /** Pour les types relation / relations (plusieurs) : endpoint listant les choix */
   source?: string;
   large?: boolean;
   /** Pas des champs nombre (0.01 pour un prix) */
@@ -20,10 +20,16 @@ export type Colonne = { chemin: string; label: string; type?: 'bool' | 'jour' | 
 
 export type Ressource = {
   endpoint: string;
+  /** Endpoint de lecture admin, s'il diffère (ex. nom complet des joueurs) */
+  lecture?: string;
+  /** Filtres acceptés dans l'URL de la liste (?equipe=…) */
+  filtres?: string[];
   titre: string;
   singulier: string;
   colonnes: Colonne[];
   champs: Champ[];
+  /** Précision ajoutée à la confirmation de suppression */
+  suppression?: string;
   /** Ressource à exemplaire unique (pas de création ni suppression) */
   unique?: boolean;
 };
@@ -73,6 +79,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/equipes',
     titre: 'Équipes',
     singulier: 'équipe',
+    suppression: 'Ses matchs, créneaux et joueurs seront supprimés avec elle.',
     colonnes: [
       { chemin: 'nom', label: 'Nom' },
       { chemin: 'estAjso', label: 'Club', type: 'bool' },
@@ -83,7 +90,9 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'estAjso', label: "Équipe du club (décocher pour un adversaire)", type: 'checkbox' },
       { nom: 'categorie', label: 'Catégorie', type: 'relation', source: '/api/categories' },
-      { nom: 'championnat', label: 'Championnat', type: 'relation', source: '/api/championnats' },
+      { nom: 'championnat', label: 'Compétition principale', type: 'relation', source: '/api/championnats' },
+      { nom: 'competitions', label: 'Autres compétitions (phase 2, coupe…)', type: 'relations', source: '/api/championnats', large: true, aide: 'Toutes les compétitions cochées sont importées depuis ffhandball.fr.' },
+      { nom: 'entente', label: 'Entente avec', type: 'text', aide: 'Club(s) partenaire(s), ex. « Douvres ». Vide si l\'équipe n\'est pas en entente.' },
       { nom: 'entraineur', label: 'Entraîneur', type: 'text' },
       { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
       { nom: 'photo', label: "Photo d'équipe", type: 'image', large: true },
@@ -163,11 +172,12 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/championnats',
     titre: 'Championnats',
     singulier: 'championnat',
-    colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'niveau', label: 'Niveau' }],
+    colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'type', label: 'Type' }, { chemin: 'niveau', label: 'Niveau' }],
     champs: [
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'niveau', label: 'Niveau', type: 'text', requis: true, aide: 'Ex. Départemental, Régional, National' },
-      { nom: 'urlFfhb', label: 'Page de la poule sur ffhandball.fr', type: 'url', large: true, aide: 'Ex. https://www.ffhandball.fr/competitions/saison-2026-2027-22/departemental/…/poule-123456/' },
+      { nom: 'type', label: 'Type', type: 'select', requis: true, options: [['championnat', 'Championnat'], ['phase-1', 'Phase 1'], ['phase-2', 'Phase 2'], ['coupe', 'Coupe']] },
+      { nom: 'urlFfhb', label: 'Adresse sur ffhandball.fr', type: 'url', large: true, aide: 'Page de la poule (…/poule-123456/) ou, si vous ne la connaissez pas, de la compétition : la poule de l\'équipe sera trouvée au premier import.' },
     ],
   },
   tranches: {
@@ -204,6 +214,30 @@ export const RESSOURCES: Record<string, Ressource> = {
 };
 
 Object.assign(RESSOURCES, {
+  joueurs: {
+    endpoint: '/api/joueurs',
+    lecture: '/api/admin/joueurs',
+    filtres: ['equipe'],
+    titre: 'Effectifs',
+    singulier: 'joueur',
+    colonnes: [
+      { chemin: 'equipe.nom', label: 'Équipe' },
+      { chemin: 'numero', label: 'N°' },
+      { chemin: 'prenom', label: 'Prénom' },
+      { chemin: 'nom', label: 'Nom' },
+      { chemin: 'poste', label: 'Poste' },
+      { chemin: 'capitaine', label: 'Capitaine', type: 'bool' },
+    ],
+    champs: [
+      { nom: 'equipe', label: 'Équipe', type: 'relation', source: '/api/equipes?estAjso=true', requis: true },
+      { nom: 'numero', label: 'Numéro', type: 'number' },
+      { nom: 'prenom', label: 'Prénom', type: 'text', requis: true },
+      { nom: 'nom', label: 'Nom', type: 'text', requis: true, aide: 'Publié en entier pour les équipes adultes, réduit à l\'initiale pour les jeunes.' },
+      { nom: 'poste', label: 'Poste', type: 'select', options: [['gardien', 'Gardien'], ['ailier-gauche', 'Ailier gauche'], ['arriere-gauche', 'Arrière gauche'], ['demi-centre', 'Demi-centre'], ['pivot', 'Pivot'], ['arriere-droit', 'Arrière droit'], ['ailier-droit', 'Ailier droit'], ['polyvalent', 'Polyvalent']] },
+      { nom: 'capitaine', label: 'Capitaine', type: 'checkbox', defaut: false },
+      { nom: 'photo', label: 'Photo', type: 'image', large: true, aide: 'Uniquement avec accord (des parents pour les mineurs).' },
+    ],
+  },
   classements: {
     endpoint: '/api/classements',
     titre: 'Classements',
@@ -289,7 +323,7 @@ Object.assign(RESSOURCES, {
 } satisfies Record<string, Ressource>);
 
 export const MENU_ADMIN: { titre: string; cles: string[] }[] = [
-  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'creneaux'] },
+  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'joueurs', 'creneaux'] },
   { titre: 'Vie du club', cles: ['evenements', 'albums', 'produits'] },
   { titre: 'Club', cles: ['club', 'partenaires', 'tarifs', 'gymnases'] },
   { titre: 'Référentiels', cles: ['categories', 'championnats', 'tranches'] },

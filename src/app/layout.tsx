@@ -14,8 +14,7 @@ export const metadata: Metadata = {
   },
   description:
     "Site officiel de l'AJS Ouistreham Handball : équipes, calendrier, résultats, actualités, entraînements et inscriptions à Ouistreham Riva-Bella (Calvados).",
-  icons: { icon: '/logo-ajso.svg' },
-  openGraph: { siteName: 'AJSO Handball', locale: 'fr_FR', type: 'website', images: ['/logo-ajso.svg'] },
+  openGraph: { siteName: 'AJSO Handball', locale: 'fr_FR', type: 'website', images: ['/logo-ajso.png'] },
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

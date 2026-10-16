@@ -5,10 +5,11 @@ alimenté par l'API Symfony [`ajso-handball-api`](https://github.com/Valent1n2-a
 
 ## Pages
 
-- **Public** : accueil, équipes (+ fiche équipe avec classement), calendrier & résultats (filtres), classements,
+- **Public** : accueil, équipes (bilan et forme) + fiche équipe (effectif par poste, stats, série, classement), calendrier & résultats (filtres), classements,
   actualités (+ article), agenda, galerie photos (visionneuse plein écran), boutique, entraînements, le club,
   partenaires, inscriptions & tarifs, contact, mentions légales.
-- **Espace club** `/admin` : tableau de bord, messages de contact, import FFHandball (matchs, scores, classements),
+- **Espace club** `/admin` : tableau de bord, messages de contact, import FFHandball (matchs, scores, classements ;
+  plusieurs compétitions par équipe : championnat, phases, coupe ; ententes),
   matchs/scores, classements, actualités, équipes, créneaux, agenda, galerie (envoi multiple de photos),
   boutique, infos club, partenaires, tarifs, gymnases, référentiels. Les images s'envoient directement
   depuis les formulaires (réduites à 2000 px dans le navigateur).
@@ -19,8 +20,9 @@ Couleurs issues du logo (raton laveur dans losange) définies dans `src/app/glob
 bleu nuit `#0a0f3c`, bleu roi `#2340c8`, violet `#6b2fa8`, bleu glacier `#9fd8ff`, accent jaune `#ffc629`.
 Typos : Anton (titres), Barlow (texte), IBM Plex Mono (infos).
 
-Le logo est une recréation vectorielle (`public/logo-ajso.svg`). Pour utiliser le fichier original,
-déposez-le dans `public/` et modifiez `LOGO_SRC` dans `src/lib/site.ts`.
+Logo officiel : `public/logo-ajso.png` (fond détouré). Icônes d'onglet : `src/app/icon.png`, `src/app/apple-icon.png`.
+Une version haute définition (SVG ou PNG ≥ 1000 px) peut remplacer `public/logo-ajso.png` sans autre changement
+(ajuster `LOGO_RATIO` dans `src/lib/site.ts` si les proportions diffèrent).
 
 ## Démarrage
 

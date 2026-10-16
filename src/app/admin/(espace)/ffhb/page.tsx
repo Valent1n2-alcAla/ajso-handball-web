@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import BoutonImport from '@/components/admin/BoutonImport';
 import { listeAdmin } from '@/lib/auth';
+import { competitionsEquipe, nomCompetition } from '@/lib/format';
 import type { Equipe } from '@/lib/types';
 
 export const metadata = { title: 'Import FFHandball' };
@@ -12,10 +13,11 @@ export default async function FfhbPage() {
     <>
       <h1 className="font-display text-4xl md:text-5xl uppercase mb-3">Import FFHandball</h1>
       <p className="text-nuit/60 max-w-3xl mb-8">
-        Récupère automatiquement les matchs, horaires, salles, scores et le classement depuis ffhandball.fr.
-        Pour chaque équipe : renseignez son <strong>nom exact sur ffhandball.fr</strong> (fiche équipe) et
-        l&apos;<strong>adresse de la page de sa poule</strong> (fiche championnat). L&apos;import tourne aussi tout seul
-        chaque jour si la tâche planifiée est installée sur le serveur.
+        Récupère automatiquement les matchs, horaires, salles, scores et classements depuis ffhandball.fr, pour
+        toutes les compétitions de chaque équipe (championnat, phases, coupe). Il faut le <strong>nom exact de
+        l&apos;équipe sur ffhandball.fr</strong> (fiche équipe) et l&apos;<strong>adresse de chaque compétition</strong>
+        (fiche championnat) : page de la poule, ou page de la compétition si la poule n&apos;est pas connue (elle est
+        alors trouvée au premier import). L&apos;import tourne aussi tout seul si la tâche planifiée est installée.
       </p>
       <div className="bg-white overflow-x-auto">
         <table className="w-full text-sm">
@@ -26,7 +28,8 @@ export default async function FfhbPage() {
           </thead>
           <tbody>
             {equipes.map((e) => {
-              const pret = !!e.nomFfhb && !!e.championnat?.urlFfhb;
+              const competitions = competitionsEquipe(e);
+              const pret = !!e.nomFfhb && competitions.some((c) => c.urlFfhb);
               return (
                 <tr key={e.id} className="border-b border-nuit/5 align-top">
                   <td className="px-4 py-3 font-semibold">{e.nom}</td>
@@ -34,13 +37,20 @@ export default async function FfhbPage() {
                     {e.nomFfhb ?? <Link href={`/admin/equipes/${e.id}`} className="text-rose-600 hover:underline">À renseigner</Link>}
                   </td>
                   <td className="px-4 py-3 max-w-xs">
-                    {!e.championnat ? (
-                      <Link href={`/admin/equipes/${e.id}`} className="text-rose-600 hover:underline">Aucun championnat</Link>
-                    ) : e.championnat.urlFfhb ? (
-                      <a href={e.championnat.urlFfhb} target="_blank" rel="noopener noreferrer" className="text-roi hover:underline">{e.championnat.nom} ↗</a>
-                    ) : (
-                      <Link href={`/admin/championnats/${e.championnat.id}`} className="text-rose-600 hover:underline">Adresse à renseigner</Link>
-                    )}
+                    {competitions.length === 0 && <Link href={`/admin/equipes/${e.id}`} className="text-rose-600 hover:underline">Aucune compétition</Link>}
+                    <ul className="space-y-1">
+                      {competitions.map((c) => (
+                        <li key={c.id}>
+                          {c.urlFfhb ? (
+                            <a href={c.urlFfhb} target="_blank" rel="noopener noreferrer" className="text-roi hover:underline">
+                              {nomCompetition(c)} ↗{!/\/poule-\d+/.test(c.urlFfhb) && <span className="text-nuit/40"> (poule cherchée à l&apos;import)</span>}
+                            </a>
+                          ) : (
+                            <Link href={`/admin/championnats/${c.id}`} className="text-rose-600 hover:underline">{nomCompetition(c)} : adresse à renseigner</Link>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
                   <td className="px-4 py-3 text-right min-w-56">{pret ? <BoutonImport equipeId={String(e.id)} /> : <span className="text-nuit/30">—</span>}</td>
                 </tr>

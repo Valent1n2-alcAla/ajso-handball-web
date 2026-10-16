@@ -38,7 +38,7 @@ export default async function Accueil() {
             </div>
           </div>
           <div className="hidden md:flex justify-center">
-            <Logo size={360} className="drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
+            <Logo size={320} className="drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
           </div>
         </div>
       </section>
