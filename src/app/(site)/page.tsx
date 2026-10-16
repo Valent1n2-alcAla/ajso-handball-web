@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import Logo from '@/components/Logo';
+import { CarteEvenement } from '@/components/Evenement';
 import { CarteMatch, LigneMatch } from '@/components/Match';
 import { BoutonLien, Section, Vide } from '@/components/ui';
-import { getActualites, getDerniersResultats, getEquipesClub, getPartenaires, getProchainsMatchs } from '@/lib/api';
+import { getActualites, getDerniersResultats, getEquipesClub, getEvenements, getPartenaires, getProchainsMatchs } from '@/lib/api';
 import { extrait, formatDatePub } from '@/lib/format';
 
 export default async function Accueil() {
-  const [equipes, prochains, resultats, actus, partenaires] = await Promise.all([
-    getEquipesClub(), getProchainsMatchs(), getDerniersResultats(), getActualites(), getPartenaires(),
+  const [equipes, prochains, resultats, actus, partenaires, evenements] = await Promise.all([
+    getEquipesClub(), getProchainsMatchs(), getDerniersResultats(), getActualites(), getPartenaires(), getEvenements('avenir'),
   ]);
   const prochainMatch = prochains[0];
 
@@ -102,6 +103,15 @@ export default async function Accueil() {
           )}
         </Section>
       </section>
+
+      {/* ===== AGENDA ===== */}
+      {evenements.length > 0 && (
+        <Section titre="Agenda" action={{ href: '/agenda', label: 'Tout l\'agenda' }}>
+          <div className="grid lg:grid-cols-2 gap-6">
+            {evenements.slice(0, 2).map((e) => <CarteEvenement key={e.id} e={e} />)}
+          </div>
+        </Section>
+      )}
 
       {/* ===== ACTUS ===== */}
       <Section titre="Actualités" action={{ href: '/actualites', label: 'Toutes les actus' }}>

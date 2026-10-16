@@ -3,13 +3,17 @@ import { JOURS } from './format';
 export type Champ = {
   nom: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'image';
   requis?: boolean;
   aide?: string;
   options?: [string, string][];
   /** Pour type relation : endpoint listant les choix + propriété affichée */
   source?: string;
   large?: boolean;
+  /** Pas des champs nombre (0.01 pour un prix) */
+  pas?: number;
+  /** Valeur par défaut d'une case à cocher à la création */
+  defaut?: boolean;
 };
 
 export type Colonne = { chemin: string; label: string; type?: 'bool' | 'jour' | 'score' | 'date' };
@@ -60,7 +64,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     champs: [
       { nom: 'titre', label: 'Titre', type: 'text', requis: true, large: true },
       { nom: 'datePub', label: 'Date de publication', type: 'datetime-local', requis: true },
-      { nom: 'image', label: "URL de l'image", type: 'url', aide: 'Lien vers une photo (hébergée sur le site ou ailleurs).' },
+      { nom: 'image', label: 'Image', type: 'image' },
       { nom: 'extrait', label: 'Chapeau / résumé', type: 'text', large: true },
       { nom: 'contenu', label: 'Contenu', type: 'textarea', requis: true, large: true, aide: 'Séparez les paragraphes par une ligne vide.' },
     ],
@@ -82,7 +86,8 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'championnat', label: 'Championnat', type: 'relation', source: '/api/championnats' },
       { nom: 'entraineur', label: 'Entraîneur', type: 'text' },
       { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
-      { nom: 'photo', label: 'URL photo', type: 'url', large: true },
+      { nom: 'photo', label: "Photo d'équipe", type: 'image', large: true },
+      { nom: 'nomFfhb', label: 'Nom sur ffhandball.fr', type: 'text', aide: 'Libellé exact du site fédéral (ex. « AJS OUISTREHAM HANDBALL 2 »), pour l\'import automatique.' },
       { nom: 'description', label: 'Description', type: 'textarea', large: true },
     ],
   },
@@ -126,7 +131,7 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'niveau', label: 'Niveau', type: 'select', requis: true, options: [['principal', 'Principal'], ['officiel', 'Institutionnel'], ['partenaire', 'Partenaire']] },
       { nom: 'url', label: 'Site web', type: 'url' },
-      { nom: 'logo', label: 'URL du logo', type: 'url' },
+      { nom: 'logo', label: 'Logo', type: 'image' },
       { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
       { nom: 'description', label: 'Description', type: 'textarea', large: true },
     ],
@@ -162,6 +167,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     champs: [
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'niveau', label: 'Niveau', type: 'text', requis: true, aide: 'Ex. Départemental, Régional, National' },
+      { nom: 'urlFfhb', label: 'Page de la poule sur ffhandball.fr', type: 'url', large: true, aide: 'Ex. https://www.ffhandball.fr/competitions/saison-2026-2027-22/departemental/…/poule-123456/' },
     ],
   },
   tranches: {
@@ -191,13 +197,100 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'label', label: 'Label fédéral', type: 'text' },
       { nom: 'facebook', label: 'Page Facebook (URL)', type: 'url' },
       { nom: 'instagram', label: 'Compte Instagram (URL)', type: 'url' },
+      { nom: 'boutiqueUrl', label: 'Boutique en ligne (HelloAsso…)', type: 'url' },
       { nom: 'presentation', label: 'Présentation', type: 'textarea', large: true },
     ],
   },
 };
 
+Object.assign(RESSOURCES, {
+  classements: {
+    endpoint: '/api/classements',
+    titre: 'Classements',
+    singulier: 'ligne de classement',
+    colonnes: [
+      { chemin: 'championnat.nom', label: 'Championnat' },
+      { chemin: 'position', label: '#' },
+      { chemin: 'equipe', label: 'Équipe' },
+      { chemin: 'points', label: 'Pts' },
+      { chemin: 'joues', label: 'J' },
+    ],
+    champs: [
+      { nom: 'championnat', label: 'Championnat', type: 'relation', source: '/api/championnats', requis: true },
+      { nom: 'position', label: 'Position', type: 'number', requis: true },
+      { nom: 'equipe', label: 'Équipe', type: 'text', requis: true },
+      { nom: 'estAjso', label: "C'est notre équipe", type: 'checkbox', defaut: false },
+      { nom: 'points', label: 'Points', type: 'number' },
+      { nom: 'joues', label: 'Joués', type: 'number' },
+      { nom: 'gagnes', label: 'Gagnés', type: 'number' },
+      { nom: 'nuls', label: 'Nuls', type: 'number' },
+      { nom: 'perdus', label: 'Perdus', type: 'number' },
+      { nom: 'butsPour', label: 'Buts pour', type: 'number' },
+      { nom: 'butsContre', label: 'Buts contre', type: 'number' },
+    ],
+  },
+  albums: {
+    endpoint: '/api/albums',
+    titre: 'Galerie',
+    singulier: 'album',
+    colonnes: [
+      { chemin: 'date', label: 'Date', type: 'date' },
+      { chemin: 'titre', label: 'Titre' },
+      { chemin: 'nombrePhotos', label: 'Photos' },
+    ],
+    champs: [
+      { nom: 'titre', label: 'Titre', type: 'text', requis: true },
+      { nom: 'date', label: 'Date', type: 'date', requis: true },
+      { nom: 'couverture', label: 'Photo de couverture', type: 'image', aide: 'Facultatif : sinon choisissez-en une parmi les photos de l\'album.' },
+      { nom: 'description', label: 'Description', type: 'textarea', large: true },
+    ],
+  },
+  evenements: {
+    endpoint: '/api/evenements',
+    titre: 'Agenda',
+    singulier: 'événement',
+    colonnes: [
+      { chemin: 'debut', label: 'Date', type: 'date' },
+      { chemin: 'titre', label: 'Titre' },
+      { chemin: 'type', label: 'Type' },
+      { chemin: 'lieu', label: 'Lieu' },
+    ],
+    champs: [
+      { nom: 'titre', label: 'Titre', type: 'text', requis: true, large: true },
+      { nom: 'type', label: 'Type', type: 'select', requis: true, options: [['tournoi', 'Tournoi'], ['stage', 'Stage'], ['festif', 'Festif'], ['assemblee', 'Vie du club (AG, réunion)'], ['evenement', 'Autre événement']] },
+      { nom: 'lieu', label: 'Lieu', type: 'text' },
+      { nom: 'debut', label: 'Début', type: 'datetime-local', requis: true },
+      { nom: 'fin', label: 'Fin', type: 'datetime-local' },
+      { nom: 'lienInscription', label: "Lien d'inscription (HelloAsso, formulaire…)", type: 'url', large: true },
+      { nom: 'image', label: 'Affiche / image', type: 'image', large: true },
+      { nom: 'description', label: 'Description', type: 'textarea', large: true },
+    ],
+  },
+  produits: {
+    endpoint: '/api/produits',
+    titre: 'Boutique',
+    singulier: 'article',
+    colonnes: [
+      { chemin: 'nom', label: 'Article' },
+      { chemin: 'prix', label: 'Prix (€)' },
+      { chemin: 'disponible', label: 'Disponible', type: 'bool' },
+    ],
+    champs: [
+      { nom: 'nom', label: 'Nom', type: 'text', requis: true },
+      { nom: 'prix', label: 'Prix (€)', type: 'number', requis: true, pas: 0.01 },
+      { nom: 'tailles', label: 'Tailles', type: 'text', aide: 'Ex. 6 ans à XXL' },
+      { nom: 'disponible', label: 'Disponible à la vente', type: 'checkbox' },
+      { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
+      { nom: 'lien', label: 'Lien de commande (HelloAsso…)', type: 'url', aide: 'Sinon : lien de la boutique du club, ou formulaire de contact.' },
+      { nom: 'image', label: 'Photo', type: 'image', large: true },
+      { nom: 'description', label: 'Description', type: 'textarea', large: true },
+    ],
+  },
+} satisfies Record<string, Ressource>);
+
 export const MENU_ADMIN: { titre: string; cles: string[] }[] = [
-  { titre: 'Saison', cles: ['rencontres', 'actualites', 'equipes', 'creneaux'] },
+  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'creneaux'] },
+  { titre: 'Vie du club', cles: ['evenements', 'albums', 'produits'] },
   { titre: 'Club', cles: ['club', 'partenaires', 'tarifs', 'gymnases'] },
   { titre: 'Référentiels', cles: ['categories', 'championnats', 'tranches'] },
 ];

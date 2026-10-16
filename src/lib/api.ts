@@ -1,5 +1,5 @@
 import type {
-  Actualite, Club, Creneau, Equipe, Gymnase, Partenaire, Rencontre, Tarif,
+  Actualite, Album, Club, Creneau, Equipe, Evenement, Gymnase, LigneClassement, Partenaire, Produit, Rencontre, Tarif,
 } from './types';
 
 /** URL de l'API Symfony, lue côté serveur uniquement. */
@@ -52,3 +52,17 @@ export const getDerniersResultats = (query = '') =>
   getRencontres(`?date[strictly_before]=${aujourdhui()}&order[date]=desc${query}`).then((r) =>
     r.filter((m) => m.scoreDom != null),
   );
+
+export const getClassement = (championnatId: number) => getList<LigneClassement>(`/api/classements?championnat=${championnatId}`);
+export const getClassements = () => getList<LigneClassement>('/api/classements');
+export const getAlbums = () => getList<Album>('/api/albums');
+export const getAlbum = (id: string) => getJson<Album>(`/api/albums/${encodeURIComponent(id)}`);
+export const getProduits = () => getList<Produit>('/api/produits');
+
+/** Événements à venir (en cours inclus) ou passés, du plus proche au plus lointain. */
+export const getEvenements = (quand: 'avenir' | 'passes') => {
+  const auj = aujourdhui();
+  return quand === 'avenir'
+    ? getList<Evenement>(`/api/evenements?debut[after]=${auj}&order[debut]=asc`)
+    : getList<Evenement>(`/api/evenements?debut[strictly_before]=${auj}&order[debut]=desc`);
+};

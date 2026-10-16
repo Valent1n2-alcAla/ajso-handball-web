@@ -19,6 +19,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         </Link>
         <nav className="px-3 py-4 flex md:block gap-1 overflow-x-auto text-sm" aria-label="Administration">
           <Link href="/admin/messages" className="block px-3 py-2 hover:bg-white/10 whitespace-nowrap">Messages</Link>
+          <Link href="/admin/ffhb" className="block px-3 py-2 hover:bg-white/10 whitespace-nowrap">Import FFHandball</Link>
           {MENU_ADMIN.map((g) => (
             <div key={g.titre} className="md:mt-4 flex md:block gap-1">
               <p className="hidden md:block px-3 pb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">{g.titre}</p>

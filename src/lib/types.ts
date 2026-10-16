@@ -2,7 +2,7 @@ export type Ref = { '@id'?: string; id: number };
 
 export type Tranche = Ref & { nom: string; ageMin?: number; ageMax?: number };
 export type Categorie = Ref & { nom: string; tranche?: Tranche | null };
-export type Championnat = Ref & { nom: string; niveau: string };
+export type Championnat = Ref & { nom: string; niveau: string; urlFfhb?: string | null };
 
 export type Equipe = Ref & {
   nom: string;
@@ -11,6 +11,7 @@ export type Equipe = Ref & {
   description?: string | null;
   photo?: string | null;
   ordre?: number;
+  nomFfhb?: string | null;
   categorie?: Categorie | null;
   championnat?: Championnat | null;
 };
@@ -26,6 +27,7 @@ export type Rencontre = Ref & {
   domicile: boolean;
   scoreDom?: number | null;
   scoreExt?: number | null;
+  ffhbId?: string | null;
 };
 
 export type Actualite = Ref & {
@@ -48,6 +50,7 @@ export type Club = Ref & {
   facebook?: string | null;
   instagram?: string | null;
   label?: string | null;
+  boutiqueUrl?: string | null;
 };
 
 export type Gymnase = Ref & { nom: string; adresse: string; ville?: string | null; codePostal?: string | null };
@@ -85,4 +88,51 @@ export type MessageContact = Ref & {
   message: string;
   createdAt: string;
   lu: boolean;
+};
+
+export type LigneClassement = Ref & {
+  championnat: Championnat;
+  position: number;
+  equipe: string;
+  estAjso: boolean;
+  points: number;
+  joues: number;
+  gagnes: number;
+  nuls: number;
+  perdus: number;
+  butsPour: number;
+  butsContre: number;
+};
+
+export type Photo = Ref & { url: string; legende?: string | null; ordre: number };
+
+export type Album = Ref & {
+  titre: string;
+  date: string;
+  description?: string | null;
+  couverture?: string | null;
+  nombrePhotos: number;
+  photos?: Photo[];
+};
+
+export type Evenement = Ref & {
+  titre: string;
+  debut: string; // AAAA-MM-JJTHH:MM, heure locale
+  fin?: string | null;
+  lieu?: string | null;
+  type: 'tournoi' | 'stage' | 'festif' | 'assemblee' | 'evenement';
+  description?: string | null;
+  image?: string | null;
+  lienInscription?: string | null;
+};
+
+export type Produit = Ref & {
+  nom: string;
+  description?: string | null;
+  prix: number;
+  image?: string | null;
+  tailles?: string | null;
+  lien?: string | null;
+  disponible: boolean;
+  ordre: number;
 };

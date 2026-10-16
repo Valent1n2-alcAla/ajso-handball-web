@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import type { EtatFormulaire } from '@/app/admin/actions';
 import type { Champ } from '@/lib/admin-ressources';
+import ChampImage from './ChampImage';
 
 export type Option = { valeur: string; libelle: string };
 
@@ -31,6 +32,8 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
               <span>{c.label}</span>
             </label>
           );
+        } else if (c.type === 'image') {
+          controle = <ChampImage nom={c.nom} valeur={String(v ?? '')} />;
         } else if (c.type === 'textarea') {
           controle = <textarea {...commun} defaultValue={String(v ?? '')} rows={8} className={input} />;
         } else if (c.type === 'relation' || c.type === 'select' || c.type === 'select-int') {
@@ -42,7 +45,7 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
             </select>
           );
         } else {
-          controle = <input type={c.type} {...commun} defaultValue={String(v ?? '')} className={input} />;
+          controle = <input type={c.type} {...commun} step={c.pas} defaultValue={String(v ?? '')} className={input} />;
         }
 
         return (
