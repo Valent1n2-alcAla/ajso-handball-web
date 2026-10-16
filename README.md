@@ -5,10 +5,13 @@ alimenté par l'API Symfony [`ajso-handball-api`](https://github.com/Valent1n2-a
 
 ## Pages
 
-- **Public** : accueil, équipes (+ fiche équipe), calendrier & résultats (filtres), actualités (+ article),
-  entraînements, le club (valeurs, bureau, gymnases), partenaires, inscriptions & tarifs, contact, mentions légales.
-- **Espace club** `/admin` : tableau de bord, messages de contact, gestion des matchs/scores, actualités,
-  équipes, créneaux, infos club, partenaires, tarifs, gymnases, référentiels.
+- **Public** : accueil, équipes (+ fiche équipe avec classement), calendrier & résultats (filtres), classements,
+  actualités (+ article), agenda, galerie photos (visionneuse plein écran), boutique, entraînements, le club,
+  partenaires, inscriptions & tarifs, contact, mentions légales.
+- **Espace club** `/admin` : tableau de bord, messages de contact, import FFHandball (matchs, scores, classements),
+  matchs/scores, classements, actualités, équipes, créneaux, agenda, galerie (envoi multiple de photos),
+  boutique, infos club, partenaires, tarifs, gymnases, référentiels. Les images s'envoient directement
+  depuis les formulaires (réduites à 2000 px dans le navigateur).
 
 ## Direction artistique
 

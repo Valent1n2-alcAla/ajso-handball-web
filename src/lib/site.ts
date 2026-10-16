@@ -1,11 +1,23 @@
 /** Remplacer par /logo-ajso.png si vous déposez le fichier original dans /public. */
 export const LOGO_SRC = '/logo-ajso.svg';
 
-export const NAV = [
+export type LienNav = { href: string; label: string };
+
+export const NAV: LienNav[] = [
   { href: '/equipes', label: 'Équipes' },
   { href: '/calendrier', label: 'Calendrier' },
+  { href: '/classements', label: 'Classements' },
   { href: '/actualites', label: 'Actualités' },
+  { href: '/agenda', label: 'Agenda' },
+  { href: '/galerie', label: 'Galerie' },
+];
+
+/** Sous-menu « Le club » */
+export const NAV_CLUB: LienNav[] = [
+  { href: '/club', label: 'Présentation' },
   { href: '/entrainements', label: 'Entraînements' },
-  { href: '/club', label: 'Le club' },
+  { href: '/inscriptions', label: 'Inscriptions' },
+  { href: '/boutique', label: 'Boutique' },
   { href: '/partenaires', label: 'Partenaires' },
+  { href: '/contact', label: 'Contact' },
 ];

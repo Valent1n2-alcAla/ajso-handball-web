@@ -42,6 +42,8 @@ export default async function TableauDeBord() {
           <Link key={k} href={`/admin/${k}/nouveau`} className="bg-nuit text-white font-display uppercase tracking-wide px-5 py-3 hover:bg-roi">+ {l}</Link>
         ))}
         <Link href="/admin/rencontres" className="bg-jaune text-nuit font-display uppercase tracking-wide px-5 py-3 hover:bg-white">Saisir un score</Link>
+        <Link href="/admin/ffhb" className="bg-violet text-white font-display uppercase tracking-wide px-5 py-3 hover:bg-roi">Import FFHandball</Link>
+        <Link href="/admin/albums/nouveau" className="bg-nuit text-white font-display uppercase tracking-wide px-5 py-3 hover:bg-roi">+ Album photo</Link>
       </div>
       <p className="text-sm text-nuit/50 mt-10">Les modifications apparaissent immédiatement sur le site. {Object.keys(RESSOURCES).length} rubriques gérables.</p>
     </>

@@ -27,11 +27,17 @@ export function valeursInitiales(r: Ressource, item: Item | null): Record<string
   const v: Record<string, string | boolean> = {};
   for (const c of r.champs) {
     const brut = item?.[c.nom];
-    if (c.type === 'checkbox') v[c.nom] = item ? brut === true : c.nom === 'estAjso' || c.nom === 'domicile' || c.nom === 'dateConfirmee';
+    if (c.type === 'checkbox') v[c.nom] = item ? brut === true : c.defaut ?? ['estAjso', 'domicile', 'dateConfirmee', 'disponible'].includes(c.nom);
     else if (c.type === 'relation') v[c.nom] = brut && typeof brut === 'object' ? String((brut as Item)['@id']) : String(brut ?? '');
-    else if (c.type === 'datetime-local') v[c.nom] = brut ? String(brut).slice(0, 16) : new Date().toISOString().slice(0, 16);
+    else if (c.type === 'datetime-local') v[c.nom] = brut ? String(brut).slice(0, 16) : c.requis ? maintenantLocal() : '';
     else if (c.type === 'date') v[c.nom] = brut ? String(brut).slice(0, 10) : '';
     else v[c.nom] = brut == null ? '' : String(brut);
   }
   return v;
+}
+
+/** Date et heure locales au format des champs datetime-local. */
+function maintenantLocal(): string {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }

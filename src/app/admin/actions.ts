@@ -94,6 +94,11 @@ export async function enregistrer(cle: string, id: string | null, _prev: EtatFor
   }
 
   revalidatePath('/', 'layout');
+  // Un nouvel album s'ouvre directement pour y ajouter les photos
+  if (cle === 'albums' && !id) {
+    const cree = await res.json().catch(() => null);
+    if (cree?.id) redirect(`/admin/albums/${cree.id}`);
+  }
   redirect(`/admin/${cle}?ok=1`);
 }
 
@@ -117,4 +122,63 @@ export async function marquerMessage(id: string, lu: boolean) {
 export async function supprimerMessage(id: string) {
   await apiAdmin(`/api/message_contacts/${encodeURIComponent(id)}`, { method: 'DELETE' });
   revalidatePath('/admin', 'layout');
+}
+
+export type ResultatEnvoi = { url?: string; erreur?: string };
+
+/** Envoie une image à l'API (public/uploads) et renvoie son URL publique. */
+export async function televerser(fd: FormData): Promise<ResultatEnvoi> {
+  const fichier = fd.get('fichier');
+  if (!(fichier instanceof File) || fichier.size === 0) return { erreur: 'Aucun fichier.' };
+  const envoi = new FormData();
+  envoi.append('fichier', fichier, fichier.name);
+  const res = await apiAdmin('/api/medias', { method: 'POST', body: envoi });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) return { erreur: data?.detail ?? `Envoi refusé (${res.status}).` };
+  return { url: data.url };
+}
+
+export async function ajouterPhoto(albumId: string, url: string, ordre: number): Promise<{ erreur?: string }> {
+  const res = await apiAdmin('/api/photos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/ld+json' },
+    body: JSON.stringify({ album: `/api/albums/${albumId}`, url, ordre }),
+  });
+  if (!res.ok) return { erreur: `Photo non enregistrée (${res.status}).` };
+  revalidatePath('/', 'layout');
+  return {};
+}
+
+export async function modifierPhoto(id: string, champs: { legende?: string | null; ordre?: number }) {
+  await apiAdmin(`/api/photos/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify(champs),
+  });
+  revalidatePath('/', 'layout');
+}
+
+export async function supprimerPhoto(id: string) {
+  await apiAdmin(`/api/photos/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  revalidatePath('/', 'layout');
+}
+
+export async function definirCouverture(albumId: string, url: string) {
+  await apiAdmin(`/api/albums/${encodeURIComponent(albumId)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify({ couverture: url }),
+  });
+  revalidatePath('/', 'layout');
+}
+
+export type ResultatImport = { ok?: string; erreur?: string };
+
+/** Import FFHandball d'une équipe (matchs, scores, classement). */
+export async function importerFfhb(equipeId: string): Promise<ResultatImport> {
+  const res = await apiAdmin(`/api/ffhb/import/${encodeURIComponent(equipeId)}`, { method: 'POST' });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) return { erreur: data?.detail ?? `Erreur ${res.status}` };
+  revalidatePath('/', 'layout');
+  return { ok: `${data.crees} match(s) ajouté(s), ${data.maj} mis à jour, classement : ${data.classement} équipes.` };
 }

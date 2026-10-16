@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Logo from './Logo';
-import { NAV } from '@/lib/site';
+import { NAV, NAV_CLUB } from '@/lib/site';
 import type { Club } from '@/lib/types';
 
 export default function Footer({ club }: { club: Club | null }) {
@@ -30,8 +30,8 @@ export default function Footer({ club }: { club: Club | null }) {
 
         <div>
           <p className="font-display text-lg uppercase mb-4 text-white/90">Navigation</p>
-          <ul className="space-y-2 text-sm text-white/60">
-            {[...NAV, { href: '/inscriptions', label: 'Inscriptions' }, { href: '/contact', label: 'Contact' }].map((l) => (
+          <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/60">
+            {[...NAV, ...NAV_CLUB].map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="hover:text-jaune transition-colors">{l.label}</Link>
               </li>

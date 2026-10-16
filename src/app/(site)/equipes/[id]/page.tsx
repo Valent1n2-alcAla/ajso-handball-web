@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LigneMatch } from '@/components/Match';
+import TableClassement from '@/components/TableClassement';
 import { Badge, PageHero, Section, Vide } from '@/components/ui';
-import { getCreneaux, getDerniersResultats, getEquipe, getProchainsMatchs } from '@/lib/api';
+import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getProchainsMatchs } from '@/lib/api';
 import { formatHeure, JOURS } from '@/lib/format';
 
 export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): Promise<Metadata> {
@@ -16,8 +17,9 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
   if (!equipe || !equipe.estAjso) notFound();
 
   const filtre = `&equipe=${equipe.id}`;
-  const [prochains, resultats, creneaux] = await Promise.all([
+  const [prochains, resultats, creneaux, classement] = await Promise.all([
     getProchainsMatchs(filtre), getDerniersResultats(filtre), getCreneaux(`?equipe=${equipe.id}`),
+    equipe.championnat ? getClassement(equipe.championnat.id) : Promise.resolve([]),
   ]);
 
   return (
@@ -55,6 +57,12 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
         </div>
 
         <aside className="space-y-6">
+          {classement.length > 0 && (
+            <div className="bg-white border border-nuit/10 p-6">
+              <h2 className="font-display text-2xl uppercase mb-4">Classement</h2>
+              <TableClassement lignes={classement} compact />
+            </div>
+          )}
           <div className="bg-nuit text-white p-7 motif-losanges">
             <h2 className="font-display text-2xl uppercase mb-5">Entraînements</h2>
             {creneaux.length === 0 ? <p className="text-white/50 text-sm">Horaires à venir.</p> : (

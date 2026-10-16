@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { enregistrer } from '../../../actions';
 import FormulaireRessource from '@/components/admin/FormulaireRessource';
+import GestionPhotos from '@/components/admin/GestionPhotos';
 import { apiAdmin } from '@/lib/auth';
 import { chargerOptions, ressourceOu404, valeursInitiales } from '../commun';
 
@@ -21,6 +22,7 @@ export default async function EditionPage({ params }: PageProps<'/admin/[ressour
       <div className="bg-white p-6 md:p-8 max-w-4xl">
         <FormulaireRessource champs={r.champs} valeurs={valeursInitiales(r, item)} options={options} action={enregistrer.bind(null, cle, id)} />
       </div>
+      {cle === 'albums' && <GestionPhotos albumId={id} photos={item.photos ?? []} couverture={item.couverture} />}
     </>
   );
 }
