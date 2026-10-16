@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatDateCourte, formatDateLongue, formatHeure, issue, recevant, visiteur } from '@/lib/format';
+import { formatDateCourte, formatDateMatch, formatHoraire, issue, recevant, visiteur } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
 
 const couleurResultat = { V: 'bg-emerald-500', N: 'bg-jaune', D: 'bg-rose-500' } as const;
@@ -28,8 +28,8 @@ export function CarteMatch({ r }: { r: Rencontre }) {
         <p className="font-display text-xl md:text-2xl uppercase leading-none flex-1 text-right"><NomEquipe r={r} cote="vis" /></p>
       </div>
       <div className="px-6 py-4 border-t border-nuit/10 flex flex-wrap items-center gap-x-6 gap-y-1 font-mono text-sm">
-        <span className="capitalize">{formatDateLongue(r.date)}</span>
-        <span className="text-roi font-semibold">{formatHeure(r.heure)}</span>
+        <span className="capitalize">{formatDateMatch(r)}</span>
+        <span className="text-roi font-semibold">{formatHoraire(r)}</span>
         <span className="text-nuit/50 md:ml-auto">{r.lieu}</span>
       </div>
     </div>
@@ -43,12 +43,13 @@ export function LigneMatch({ r, sombre = false }: { r: Rencontre; sombre?: boole
   return (
     <div className="py-6 grid grid-cols-[64px_1fr] md:grid-cols-[80px_1fr_auto] items-center gap-x-5 gap-y-2">
       <div className="font-display leading-none text-center">
+        {r.dateConfirmee === false && <span className={`font-mono text-[9px] uppercase block mb-1 ${sec}`}>WE</span>}
         <span className="text-3xl block">{formatDateCourte(r.date).split(' ')[0]}</span>
         <span className={`font-mono text-[10px] uppercase ${sec}`}>{formatDateCourte(r.date).split(' ').slice(1).join(' ')}</span>
       </div>
       <div className="min-w-0">
         <Link href={`/equipes/${r.equipe.id}`} className={`font-mono text-[10px] uppercase tracking-widest ${sombre ? 'text-glacier' : 'text-violet'} hover:underline`}>
-          {r.equipe.nom}{r.equipe.championnat ? ` · ${r.equipe.championnat.nom}` : ''}
+          {r.equipe.nom}{r.equipe.championnat ? ` · ${r.equipe.championnat.nom}` : ''}{r.journee ? ` · ${r.journee}` : ''}
         </Link>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-display text-lg md:text-xl uppercase leading-tight mt-1">
           <NomEquipe r={r} cote="rec" />
@@ -69,7 +70,7 @@ export function LigneMatch({ r, sombre = false }: { r: Rencontre; sombre?: boole
             {libelleResultat[res.resultat]}
           </span>
         ) : (
-          <span>{formatHeure(r.heure)} · {r.domicile ? 'Domicile' : 'Extérieur'}</span>
+          <span>{r.dateConfirmee === false ? formatDateMatch(r) : formatHoraire(r)} · {r.domicile ? 'Domicile' : 'Extérieur'}</span>
         )}
         <span className="hidden md:inline">· {r.lieu}</span>
       </div>

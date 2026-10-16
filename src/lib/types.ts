@@ -19,7 +19,9 @@ export type Rencontre = Ref & {
   equipe: Equipe;
   equipeAdverse: Equipe;
   date: string; // Y-m-d
-  heure: string; // H:i
+  heure?: string | null; // H:i, null si inconnu
+  dateConfirmee?: boolean; // false : seul le week-end est connu (date = samedi)
+  journee?: string | null;
   lieu: string;
   domicile: boolean;
   scoreDom?: number | null;

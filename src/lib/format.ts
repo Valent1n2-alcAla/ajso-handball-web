@@ -19,6 +19,23 @@ export const formatDatePub = (date: string) =>
 
 export const formatHeure = (heure?: string | null) => (heure ? heure.slice(0, 5).replace(':', 'h') : '');
 
+/** « Week-end du 21-22 nov. » à partir du samedi. */
+export function formatWeekEnd(date: string): string {
+  const sam = parseDate(date);
+  const dim = new Date(sam.getFullYear(), sam.getMonth(), sam.getDate() + 1);
+  const mois = (d: Date) => d.toLocaleDateString('fr-FR', { month: 'short' });
+  return sam.getMonth() === dim.getMonth()
+    ? `Week-end du ${sam.getDate()}-${dim.getDate()} ${mois(dim)}`
+    : `Week-end du ${sam.getDate()} ${mois(sam)} au ${dim.getDate()} ${mois(dim)}`;
+}
+
+/** Date lisible d'un match, au week-end près si le jour n'est pas fixé. */
+export const formatDateMatch = (r: Rencontre) =>
+  r.dateConfirmee === false ? formatWeekEnd(r.date) : formatDateLongue(r.date);
+
+export const formatHoraire = (r: Rencontre) =>
+  r.dateConfirmee === false ? 'Date à confirmer' : r.heure ? formatHeure(r.heure) : 'Horaire à venir';
+
 /** Équipes dans l'ordre officiel : recevant à gauche, visiteur à droite. */
 export const recevant = (r: Rencontre) => (r.domicile ? r.equipe : r.equipeAdverse);
 export const visiteur = (r: Rencontre) => (r.domicile ? r.equipeAdverse : r.equipe);

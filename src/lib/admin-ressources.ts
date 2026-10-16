@@ -39,8 +39,10 @@ export const RESSOURCES: Record<string, Ressource> = {
     champs: [
       { nom: 'equipe', label: 'Équipe AJSO', type: 'relation', source: '/api/equipes?estAjso=true', requis: true },
       { nom: 'equipeAdverse', label: 'Adversaire', type: 'relation', source: '/api/equipes?estAjso=false', requis: true, aide: "Créez l'adversaire dans « Équipes » (case « équipe du club » décochée) s'il n'existe pas." },
-      { nom: 'date', label: 'Date', type: 'date', requis: true },
-      { nom: 'heure', label: 'Heure', type: 'time', requis: true },
+      { nom: 'date', label: 'Date (ou samedi du week-end)', type: 'date', requis: true },
+      { nom: 'dateConfirmee', label: 'Jour exact confirmé (décocher si seul le week-end est connu)', type: 'checkbox' },
+      { nom: 'heure', label: 'Heure', type: 'time', aide: 'Laisser vide si inconnue.' },
+      { nom: 'journee', label: 'Journée', type: 'text', aide: 'Ex. J3, Coupe 1er tour' },
       { nom: 'lieu', label: 'Lieu', type: 'text', requis: true },
       { nom: 'domicile', label: "Match à domicile (l'AJSO reçoit)", type: 'checkbox' },
       { nom: 'scoreDom', label: 'Score équipe qui reçoit', type: 'number', aide: 'Laisser vide tant que le match n\'est pas joué.' },
