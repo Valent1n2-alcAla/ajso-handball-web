@@ -38,7 +38,9 @@ export default async function EquipesPage() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {liste.map((e) => {
                   const b = bilan(resultats.filter((r) => r.equipe.id === e.id));
-                  const place = classements.find((l) => l.estAjso && l.championnat.id === e.championnat?.id);
+                  const ids = [e.championnat?.id, ...(e.competitions ?? []).map((c) => c.id)];
+                  // Rang dans la compétition la plus récente qui a un classement
+                  const place = [...ids].reverse().map((id) => classements.find((l) => l.estAjso && l.championnat.id === id)).find(Boolean);
                   return (
                     <Link key={e.id} href={`/equipes/${e.id}`} className="group relative bg-nuit text-white overflow-hidden min-h-[300px] flex flex-col">
                       {e.photo ? (
@@ -59,6 +61,7 @@ export default async function EquipesPage() {
                         </div>
                         <p className="font-display text-4xl uppercase mt-auto leading-none">{e.nom}</p>
                         <p className="text-sm text-white/60 mt-2">{e.championnat ? e.championnat.nom : 'Pratique sans championnat'}</p>
+                        {e.entente && <p className="font-mono text-[10px] uppercase tracking-widest text-glacier mt-1">Entente avec {e.entente}</p>}
                         <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-white/10 min-h-12">
                           {b.joues > 0 ? (
                             <>

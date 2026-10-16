@@ -7,7 +7,7 @@ import { CarteMatch, LigneMatch } from '@/components/Match';
 import TableClassement from '@/components/TableClassement';
 import { Badge, BoutonLien, Vide } from '@/components/ui';
 import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getJoueurs, getProchainsMatchs } from '@/lib/api';
-import { formatHeure, issue, JOURS, recevant, visiteur } from '@/lib/format';
+import { competitionsEquipe, formatHeure, issue, JOURS, nomCompetition, recevant, visiteur } from '@/lib/format';
 import { bilan, LIBELLE_SERIE } from '@/lib/stats';
 
 export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): Promise<Metadata> {
@@ -28,11 +28,15 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
   if (!equipe || !equipe.estAjso) notFound();
 
   const filtre = `&equipe=${equipe.id}`;
-  const [prochains, resultats, creneaux, classement, joueurs] = await Promise.all([
+  const competitions = competitionsEquipe(equipe);
+  const [prochains, resultats, creneaux, joueurs, ...parCompetition] = await Promise.all([
     getProchainsMatchs(filtre), getDerniersResultats(filtre), getCreneaux(`?equipe=${equipe.id}`),
-    equipe.championnat ? getClassement(equipe.championnat.id) : Promise.resolve([]),
     getJoueurs(equipe.id),
+    ...competitions.map((c) => getClassement(c.id)),
   ]);
+  // Classements publiés, la compétition la plus récente (dernière phase) en premier
+  const classements = competitions.map((c, i) => ({ c, lignes: parCompetition[i] })).filter((x) => x.lignes.length).reverse();
+  const classement = classements[0]?.lignes ?? [];
 
   const b = bilan(resultats);
   const nous = classement.find((l) => l.estAjso);
@@ -62,10 +66,11 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
         <div className="relative max-w-[1400px] mx-auto px-4 md:px-10 pt-14 md:pt-20 pb-10">
           <Link href="/equipes" className="font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">← Toutes les équipes</Link>
           <p className="font-mono text-xs tracking-[0.35em] uppercase text-jaune mt-8 mb-3">{equipe.categorie?.nom ?? 'Équipe'}</p>
-          <h1 className="font-display text-6xl md:text-[9rem] uppercase leading-[0.85]">{equipe.nom}</h1>
+          <h1 className="font-display text-6xl md:text-[9rem] uppercase leading-[0.95] pt-2">{equipe.nom}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-6">
-            {equipe.championnat && <Badge ton="jaune">{equipe.championnat.nom}</Badge>}
+            {competitions.map((c) => <Badge key={c.id} ton="jaune">{nomCompetition(c)}</Badge>)}
             {equipe.championnat && <span className="font-mono text-xs uppercase tracking-widest text-white/60">{equipe.championnat.niveau}</span>}
+            {equipe.entente && <span className="font-mono text-xs uppercase tracking-widest border border-glacier/40 text-glacier px-2.5 py-1">Entente avec {equipe.entente}</span>}
             {nous && (
               <span className="font-display text-xl uppercase bg-white/10 px-3 py-1">
                 {nous.position}<sup className="text-xs">{nous.position === 1 ? 'er' : 'e'}</sup> / {classement.length}
@@ -182,10 +187,14 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
       {/* ===== CLASSEMENT + ENTRAÎNEMENTS ===== */}
       <section className={`max-w-[1400px] mx-auto px-4 md:px-10 py-16 grid gap-12 ${classement.length ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
         {classement.length > 0 ? (
-          <div id="classement" className="scroll-mt-36">
-            <h2 className="font-display text-3xl md:text-4xl uppercase mb-1">Classement</h2>
-            <p className="text-sm text-nuit/50 mb-6">{equipe.championnat?.nom}</p>
-            <TableClassement lignes={classement} />
+          <div id="classement" className="scroll-mt-36 space-y-12">
+            {classements.map(({ c, lignes }) => (
+              <div key={c.id}>
+                <h2 className="font-display text-3xl md:text-4xl uppercase mb-1">Classement</h2>
+                <p className="text-sm text-nuit/50 mb-6">{nomCompetition(c)}</p>
+                <TableClassement lignes={lignes} />
+              </div>
+            ))}
           </div>
         ) : null}
         <aside id="entrainements" className={`scroll-mt-36 grid gap-6 ${classement.length ? '' : 'md:grid-cols-2'}`}>

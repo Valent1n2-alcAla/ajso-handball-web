@@ -2,7 +2,8 @@ export type Ref = { '@id'?: string; id: number };
 
 export type Tranche = Ref & { nom: string; ageMin?: number; ageMax?: number };
 export type Categorie = Ref & { nom: string; tranche?: Tranche | null };
-export type Championnat = Ref & { nom: string; niveau: string; urlFfhb?: string | null };
+export type TypeCompetition = 'championnat' | 'phase-1' | 'phase-2' | 'coupe';
+export type Championnat = Ref & { nom: string; niveau: string; type?: TypeCompetition; urlFfhb?: string | null };
 
 export type Equipe = Ref & {
   nom: string;
@@ -12,6 +13,10 @@ export type Equipe = Ref & {
   photo?: string | null;
   ordre?: number;
   nomFfhb?: string | null;
+  /** Club(s) partenaire(s) de l'entente */
+  entente?: string | null;
+  /** Autres compétitions (phases, coupe) */
+  competitions?: Championnat[];
   categorie?: Categorie | null;
   championnat?: Championnat | null;
 };
@@ -28,6 +33,8 @@ export type Rencontre = Ref & {
   scoreDom?: number | null;
   scoreExt?: number | null;
   ffhbId?: string | null;
+  /** Compétition du match (import FFHB) ; sinon celle de l'équipe */
+  championnat?: Championnat | null;
 };
 
 export type Actualite = Ref & {

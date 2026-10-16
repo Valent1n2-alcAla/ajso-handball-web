@@ -11,13 +11,14 @@ export type EtatFormulaire = {
   erreur?: string;
   erreurs?: Record<string, string>;
   /** Valeurs saisies, renvoyées pour ne pas vider le formulaire en cas d'erreur. */
-  valeurs?: Record<string, string | boolean>;
+  valeurs?: Record<string, string | boolean | string[]>;
 };
 
-function valeursSaisies(fd: FormData, cases: string[] = []): Record<string, string | boolean> {
-  const v: Record<string, string | boolean> = {};
+function valeursSaisies(fd: FormData, cases: string[] = [], multiples: string[] = []): Record<string, string | boolean | string[]> {
+  const v: Record<string, string | boolean | string[]> = {};
   for (const [k, val] of fd.entries()) if (typeof val === 'string' && !k.startsWith('$')) v[k] = val;
   for (const c of cases) v[c] = fd.get(c) === 'on';
+  for (const m of multiples) v[m] = fd.getAll(m).map(String);
   return v;
 }
 
@@ -61,6 +62,7 @@ export async function deconnexion() {
 /** Convertit une valeur de formulaire selon le type du champ. */
 function convertir(champ: Champ, fd: FormData): unknown {
   if (champ.type === 'checkbox') return fd.get(champ.nom) === 'on';
+  if (champ.type === 'relations') return fd.getAll(champ.nom).map(String); // liste d'IRI
   const brut = String(fd.get(champ.nom) ?? '').trim();
   if (brut === '') return champ.type === 'text' || champ.type === 'textarea' ? (champ.requis ? '' : null) : null;
   if (champ.type === 'number' || champ.type === 'select-int') return Number(brut);
@@ -72,7 +74,7 @@ export async function enregistrer(cle: string, id: string | null, _prev: EtatFor
   if (!ressource) return { erreur: 'Ressource inconnue.' };
 
 
-  const valeurs = valeursSaisies(fd, ressource.champs.filter((c) => c.type === 'checkbox').map((c) => c.nom));
+  const valeurs = valeursSaisies(fd, ressource.champs.filter((c) => c.type === 'checkbox').map((c) => c.nom), ressource.champs.filter((c) => c.type === 'relations').map((c) => c.nom));
   const corps: Record<string, unknown> = {};
   for (const champ of ressource.champs) corps[champ.nom] = convertir(champ, fd);
 
@@ -180,5 +182,6 @@ export async function importerFfhb(equipeId: string): Promise<ResultatImport> {
   const data = await res.json().catch(() => null);
   if (!res.ok) return { erreur: data?.detail ?? `Erreur ${res.status}` };
   revalidatePath('/', 'layout');
-  return { ok: `${data.crees} match(s) ajouté(s), ${data.maj} mis à jour, classement : ${data.classement} équipes.` };
+  const avert = (data.ignorees ?? []).length ? ` ⚠ ${data.ignorees.join(' ; ')}` : '';
+  return { ok: `${data.competitions} compétition(s) : ${data.crees} match(s) ajouté(s), ${data.maj} mis à jour, classements : ${data.classement} lignes.${avert}` };
 }

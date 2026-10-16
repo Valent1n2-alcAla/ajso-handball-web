@@ -71,6 +71,20 @@ export function formatPeriode(debut: string, fin?: string | null): string {
     : `${jour(d)} → ${jour(f)}`;
 }
 
+export const TYPES_COMPETITION: Record<string, string> = {
+  championnat: 'Championnat', 'phase-1': 'Phase 1', 'phase-2': 'Phase 2', coupe: 'Coupe',
+};
+
+/** « Championnat Plus 16 ans… » ou « Phase 2 · -15 Garçons… » */
+export const nomCompetition = (c: { nom: string; type?: string }) =>
+  c.type && c.type !== 'championnat' ? `${TYPES_COMPETITION[c.type] ?? c.type} · ${c.nom}` : c.nom;
+
+/** Toutes les compétitions d'une équipe, principale en premier. */
+export function competitionsEquipe<C extends { id: number }>(e: { championnat?: C | null; competitions?: C[] }): C[] {
+  const liste = [e.championnat, ...(e.competitions ?? [])].filter((c): c is C => !!c);
+  return liste.filter((c, i) => liste.findIndex((x) => x.id === c.id) === i);
+}
+
 export const TYPES_EVENEMENT: Record<string, string> = {
   tournoi: 'Tournoi', stage: 'Stage', festif: 'Festif', assemblee: 'Vie du club', evenement: 'Événement',
 };

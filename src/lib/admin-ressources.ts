@@ -3,11 +3,11 @@ import { JOURS } from './format';
 export type Champ = {
   nom: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'image';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'relations' | 'image';
   requis?: boolean;
   aide?: string;
   options?: [string, string][];
-  /** Pour type relation : endpoint listant les choix + propriété affichée */
+  /** Pour les types relation / relations (plusieurs) : endpoint listant les choix */
   source?: string;
   large?: boolean;
   /** Pas des champs nombre (0.01 pour un prix) */
@@ -87,7 +87,9 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'estAjso', label: "Équipe du club (décocher pour un adversaire)", type: 'checkbox' },
       { nom: 'categorie', label: 'Catégorie', type: 'relation', source: '/api/categories' },
-      { nom: 'championnat', label: 'Championnat', type: 'relation', source: '/api/championnats' },
+      { nom: 'championnat', label: 'Compétition principale', type: 'relation', source: '/api/championnats' },
+      { nom: 'competitions', label: 'Autres compétitions (phase 2, coupe…)', type: 'relations', source: '/api/championnats', large: true, aide: 'Toutes les compétitions cochées sont importées depuis ffhandball.fr.' },
+      { nom: 'entente', label: 'Entente avec', type: 'text', aide: 'Club(s) partenaire(s), ex. « Douvres ». Vide si l\'équipe n\'est pas en entente.' },
       { nom: 'entraineur', label: 'Entraîneur', type: 'text' },
       { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
       { nom: 'photo', label: "Photo d'équipe", type: 'image', large: true },
@@ -167,11 +169,12 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/championnats',
     titre: 'Championnats',
     singulier: 'championnat',
-    colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'niveau', label: 'Niveau' }],
+    colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'type', label: 'Type' }, { chemin: 'niveau', label: 'Niveau' }],
     champs: [
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
       { nom: 'niveau', label: 'Niveau', type: 'text', requis: true, aide: 'Ex. Départemental, Régional, National' },
-      { nom: 'urlFfhb', label: 'Page de la poule sur ffhandball.fr', type: 'url', large: true, aide: 'Ex. https://www.ffhandball.fr/competitions/saison-2026-2027-22/departemental/…/poule-123456/' },
+      { nom: 'type', label: 'Type', type: 'select', requis: true, options: [['championnat', 'Championnat'], ['phase-1', 'Phase 1'], ['phase-2', 'Phase 2'], ['coupe', 'Coupe']] },
+      { nom: 'urlFfhb', label: 'Adresse sur ffhandball.fr', type: 'url', large: true, aide: 'Page de la poule (…/poule-123456/) ou, si vous ne la connaissez pas, de la compétition : la poule de l\'équipe sera trouvée au premier import.' },
     ],
   },
   tranches: {
