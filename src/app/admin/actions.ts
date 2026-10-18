@@ -182,6 +182,6 @@ export async function importerFfhb(equipeId: string): Promise<ResultatImport> {
   const data = await res.json().catch(() => null);
   if (!res.ok) return { erreur: data?.detail ?? `Erreur ${res.status}` };
   revalidatePath('/', 'layout');
-  const avert = (data.ignorees ?? []).length ? ` ⚠ ${data.ignorees.join(' ; ')}` : '';
+  const avert = [...(data.infos ?? []), ...(data.ignorees ?? [])].map((m: string) => ` ⚠ ${m}`).join('');
   return { ok: `${data.competitions} compétition(s) : ${data.crees} match(s) ajouté(s), ${data.maj} mis à jour, classements : ${data.classement} lignes.${avert}` };
 }
