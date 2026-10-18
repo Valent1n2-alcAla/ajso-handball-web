@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="fr" className={`${anton.variable} ${barlow.variable} ${plexMono.variable} h-full antialiased`}>
+    <html lang="fr" data-scroll-behavior="smooth" className={`${anton.variable} ${barlow.variable} ${plexMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-body">{children}</body>
     </html>
   );
