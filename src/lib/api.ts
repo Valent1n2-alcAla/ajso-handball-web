@@ -16,10 +16,14 @@ async function getJson<T>(path: string): Promise<T | null> {
       headers: { Accept: 'application/ld+json' },
       next: { revalidate: REVALIDATE, tags: ['api'] },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`API ${res.status} sur ${path}`);
+      return null;
+    }
     return (await res.json()) as T;
-  } catch {
+  } catch (e) {
     // API injoignable : les pages affichent un état vide plutôt qu'une erreur.
+    console.error(`API injoignable sur ${path} :`, e instanceof Error ? e.message : e);
     return null;
   }
 }
