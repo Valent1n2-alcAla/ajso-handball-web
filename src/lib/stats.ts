@@ -51,16 +51,24 @@ export const LIBELLE_SERIE: Record<Resultat, [string, string]> = {
   D: ['défaite', 'défaites'],
 };
 
-export type StatJoueur = { joueur: Joueur; matchs: number; buts: number; moyenne: number; record: number };
+export type StatJoueur = {
+  joueur: Joueur; matchs: number; buts: number; moyenne: number; record: number;
+  buts7m: number; tirs: number; arrets: number; exclusions: number; cartons: number;
+};
 
 /** Statistiques individuelles à partir des compositions de match, meilleurs buteurs en premier. */
 export function statsJoueurs(participations: Participation[]): StatJoueur[] {
   const parJoueur = new Map<number, StatJoueur & { rencontres: Set<string> }>();
   for (const p of participations) {
-    const s = parJoueur.get(p.joueur.id) ?? { joueur: p.joueur, matchs: 0, buts: 0, moyenne: 0, record: 0, rencontres: new Set<string>() };
+    const s = parJoueur.get(p.joueur.id) ?? { joueur: p.joueur, matchs: 0, buts: 0, moyenne: 0, record: 0, buts7m: 0, tirs: 0, arrets: 0, exclusions: 0, cartons: 0, rencontres: new Set<string>() };
     s.rencontres.add(p.rencontre);
     s.buts += p.buts;
     s.record = Math.max(s.record, p.buts);
+    s.buts7m += p.buts7m ?? 0;
+    s.tirs += p.tirs ?? 0;
+    s.arrets += p.arrets ?? 0;
+    s.exclusions += p.exclusions ?? 0;
+    s.cartons += (p.avertissement ? 1 : 0) + (p.disqualification ? 1 : 0);
     parJoueur.set(p.joueur.id, s);
   }
   return [...parJoueur.values()]

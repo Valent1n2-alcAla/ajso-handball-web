@@ -165,4 +165,10 @@ export type Participation = Ref & {
   rencontre: string;
   numero?: number | null;
   buts: number;
+  buts7m?: number;
+  tirs?: number;
+  arrets?: number;
+  exclusions?: number;
+  avertissement?: boolean;
+  disqualification?: boolean;
 };
