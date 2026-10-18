@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Effectif from '@/components/Effectif';
+import StatsJoueurs from '@/components/StatsJoueurs';
 import Forme from '@/components/Forme';
 import { CarteMatch, LigneMatch } from '@/components/Match';
 import TableClassement from '@/components/TableClassement';
 import { Badge, BoutonLien, Vide } from '@/components/ui';
-import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getJoueurs, getProchainsMatchs } from '@/lib/api';
+import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getJoueurs, getParticipations, getProchainsMatchs } from '@/lib/api';
 import { competitionsEquipe, formatHeure, issue, JOURS, nomCompetition, recevant, visiteur } from '@/lib/format';
-import { bilan, LIBELLE_SERIE } from '@/lib/stats';
+import { bilan, LIBELLE_SERIE, statsJoueurs } from '@/lib/stats';
 
 export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): Promise<Metadata> {
   const equipe = await getEquipe((await params).id);
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): 
   };
 }
 
-const ANCRES = [['effectif', 'Effectif'], ['matchs', 'Matchs'], ['classement', 'Classement'], ['entrainements', 'Entraînements']] as const;
+const ANCRES = [['effectif', 'Effectif'], ['stats', 'Stats'], ['matchs', 'Matchs'], ['classement', 'Classement'], ['entrainements', 'Entraînements']] as const;
 
 export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>) {
   const { id } = await params;
@@ -29,9 +30,9 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
 
   const filtre = `&equipe=${equipe.id}`;
   const competitions = competitionsEquipe(equipe);
-  const [prochains, resultats, creneaux, joueurs, ...parCompetition] = await Promise.all([
+  const [prochains, resultats, creneaux, joueurs, participations, ...parCompetition] = await Promise.all([
     getProchainsMatchs(filtre), getDerniersResultats(filtre), getCreneaux(`?equipe=${equipe.id}`),
-    getJoueurs(equipe.id),
+    getJoueurs(equipe.id), getParticipations(equipe.id),
     ...competitions.map((c) => getClassement(c.id)),
   ]);
   // Classements publiés, la compétition la plus récente (dernière phase) en premier
@@ -39,10 +40,13 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
   const classement = classements[0]?.lignes ?? [];
 
   const b = bilan(resultats);
+  const stats = statsJoueurs(participations);
+  const matchsSaisis = new Set(participations.map((p) => p.rencontre)).size;
   const nous = classement.find((l) => l.estAjso);
   const diff = b.butsPour - b.butsContre;
   const presentes = new Set([
     joueurs.length || equipe.entraineur ? 'effectif' : '',
+    stats.length ? 'stats' : '',
     'matchs',
     classement.length ? 'classement' : '',
     creneaux.length ? 'entrainements' : '',
@@ -148,7 +152,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
             <h2 className="font-display text-4xl md:text-6xl uppercase leading-none">Effectif</h2>
             {joueurs.length > 0 && <span className="font-mono text-xs text-nuit/40">{joueurs.length} joueur{joueurs.length > 1 ? 's' : ''}</span>}
           </div>
-          {joueurs.length > 0 ? <Effectif joueurs={joueurs} /> : <Vide>L&apos;effectif sera bientôt présenté.</Vide>}
+          {joueurs.length > 0 ? <Effectif joueurs={joueurs} stats={stats} /> : <Vide>L&apos;effectif sera bientôt présenté.</Vide>}
           {equipe.entraineur && (
             <div className="mt-10">
               <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-violet mb-4">Staff</h3>
@@ -163,6 +167,14 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* ===== STATS JOUEURS ===== */}
+      {stats.length > 0 && (
+        <section id="stats" className="max-w-[1400px] mx-auto px-4 md:px-10 pb-16 scroll-mt-36">
+          <h2 className="font-display text-4xl md:text-6xl uppercase leading-none mb-10">Statistiques</h2>
+          <StatsJoueurs stats={stats} matchsEquipe={matchsSaisis} />
         </section>
       )}
 

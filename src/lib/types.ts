@@ -158,3 +158,11 @@ export type Joueur = Ref & {
   photo?: string | null;
   capitaine: boolean;
 };
+
+export type Participation = Ref & {
+  joueur: Joueur;
+  /** IRI du match */
+  rencontre: string;
+  numero?: number | null;
+  buts: number;
+};

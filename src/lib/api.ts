@@ -1,5 +1,5 @@
 import type {
-  Actualite, Album, Club, Creneau, Equipe, Evenement, Gymnase, Joueur, LigneClassement, Partenaire, Produit, Rencontre, Tarif,
+  Actualite, Album, Club, Creneau, Equipe, Evenement, Gymnase, Joueur, LigneClassement, Participation, Partenaire, Produit, Rencontre, Tarif,
 } from './types';
 
 /** URL de l'API Symfony, lue côté serveur uniquement. */
@@ -67,3 +67,4 @@ export const getEvenements = (quand: 'avenir' | 'passes') => {
     : getList<Evenement>(`/api/evenements?debut[strictly_before]=${auj}&order[debut]=desc`);
 };
 export const getJoueurs = (equipeId: number) => getList<Joueur>(`/api/joueurs?equipe=${equipeId}`);
+export const getParticipations = (equipeId: number) => getList<Participation>(`/api/participations?joueur.equipe=${equipeId}`);

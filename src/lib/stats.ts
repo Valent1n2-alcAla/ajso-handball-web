@@ -1,5 +1,5 @@
 import { issue } from './format';
-import type { Rencontre } from './types';
+import type { Joueur, Participation, Rencontre } from './types';
 
 export type Resultat = 'V' | 'N' | 'D';
 
@@ -50,3 +50,20 @@ export const LIBELLE_SERIE: Record<Resultat, [string, string]> = {
   N: ['nul', 'nuls'],
   D: ['défaite', 'défaites'],
 };
+
+export type StatJoueur = { joueur: Joueur; matchs: number; buts: number; moyenne: number; record: number };
+
+/** Statistiques individuelles à partir des compositions de match, meilleurs buteurs en premier. */
+export function statsJoueurs(participations: Participation[]): StatJoueur[] {
+  const parJoueur = new Map<number, StatJoueur & { rencontres: Set<string> }>();
+  for (const p of participations) {
+    const s = parJoueur.get(p.joueur.id) ?? { joueur: p.joueur, matchs: 0, buts: 0, moyenne: 0, record: 0, rencontres: new Set<string>() };
+    s.rencontres.add(p.rencontre);
+    s.buts += p.buts;
+    s.record = Math.max(s.record, p.buts);
+    parJoueur.set(p.joueur.id, s);
+  }
+  return [...parJoueur.values()]
+    .map(({ rencontres, ...s }) => ({ ...s, matchs: rencontres.size, moyenne: rencontres.size ? s.buts / rencontres.size : 0 }))
+    .sort((a, b) => b.buts - a.buts || b.moyenne - a.moyenne || a.joueur.nomAffiche.localeCompare(b.joueur.nomAffiche));
+}
