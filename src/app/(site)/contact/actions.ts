@@ -1,6 +1,6 @@
 'use server';
 
-import { API_URL } from '@/lib/api';
+import { API_URL, enTeteIpVisiteur } from '@/lib/api';
 
 export type EtatContact = { ok: boolean; message?: string; erreurs?: Record<string, string>; valeurs?: Record<string, string> };
 
@@ -37,7 +37,7 @@ export async function envoyerMessage(_prev: EtatContact, fd: FormData): Promise<
   try {
     const res = await fetch(`${API_URL}/api/message_contacts`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' },
+      headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json', ...(await enTeteIpVisiteur()) },
       body: JSON.stringify(data),
       cache: 'no-store',
     });

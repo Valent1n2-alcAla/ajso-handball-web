@@ -1,6 +1,6 @@
 'use server';
 
-import { API_URL } from '@/lib/api';
+import { API_URL, enTeteIpVisiteur } from '@/lib/api';
 import { aujourdhuiParis } from '@/lib/format';
 import { CHAMPS_PREINSCRIPTION, validerPreinscription } from '@/lib/preinscription';
 
@@ -26,7 +26,7 @@ export async function envoyerPreinscription(_prev: EtatPreinscription, fd: FormD
   try {
     res = await fetch(`${API_URL}/api/preinscriptions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json' },
+      headers: { 'Content-Type': 'application/ld+json', Accept: 'application/ld+json', ...(await enTeteIpVisiteur()) },
       body: JSON.stringify(donnees),
       cache: 'no-store',
     });

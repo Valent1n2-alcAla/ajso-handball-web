@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import type {
   Actualite, Album, Club, Convocation, Creneau, DocumentClub, Equipe, Evenement, Gymnase, Joueur, LigneClassement, Participation, Partenaire, Permanence, Produit, Rencontre, Tarif,
 } from './types';
@@ -118,3 +119,13 @@ export const getConvocationsAVenir = (equipeId: number) =>
 export const getPermanencesAVenir = () => getList<Permanence>(`/api/permanences?rencontre.date[after]=${aujourdhui()}`);
 
 export const getDocuments = () => getList<DocumentClub>('/api/documents');
+
+/**
+ * IP du visiteur transmise à l'API (formulaires publics) : sans elle, la limite d'envois
+ * de l'API compterait tous les visiteurs comme un seul (l'IP du serveur du site).
+ */
+export async function enTeteIpVisiteur(): Promise<Record<string, string>> {
+  const h = await headers();
+  const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip')?.trim();
+  return ip ? { 'X-Forwarded-For': ip } : {};
+}
