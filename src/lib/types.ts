@@ -58,6 +58,8 @@ export type Club = Ref & {
   instagram?: string | null;
   label?: string | null;
   boutiqueUrl?: string | null;
+  /** Page HelloAsso du club (adhésions, dons) */
+  helloassoUrl?: string | null;
 };
 
 export type Gymnase = Ref & { nom: string; adresse: string; ville?: string | null; codePostal?: string | null };
@@ -85,6 +87,8 @@ export type Tarif = Ref & {
   prix: number;
   details?: string | null;
   ordre: number;
+  /** Paiement de l'adhésion en ligne (HelloAsso) */
+  helloassoUrl?: string | null;
 };
 
 export type MessageContact = Ref & {
@@ -171,4 +175,51 @@ export type Participation = Ref & {
   exclusions?: number;
   avertissement?: boolean;
   disqualification?: boolean;
+};
+
+/** Match tel qu'embarqué dans une convocation ou une permanence. */
+export type RencontreResume = Pick<Rencontre, 'id' | 'date' | 'heure' | 'lieu' | 'domicile' | 'equipe' | 'equipeAdverse' | 'championnat' | 'journee' | 'scoreDom' | 'scoreExt' | 'dateConfirmee'> & { '@id'?: string };
+
+export type Convocation = Ref & {
+  rencontre: RencontreResume;
+  /** AAAA-MM-JJTHH:MM, heure de Paris */
+  rendezVous: string;
+  lieuRendezVous?: string | null;
+  joueurs: (Ref & { numero?: number | null; nomAffiche: string })[];
+  message?: string | null;
+  publiee: boolean;
+};
+
+export type RolePermanence = 'arbitrage' | 'table' | 'buvette' | 'accueil' | 'autre';
+
+export type Permanence = Ref & {
+  rencontre: RencontreResume;
+  role: RolePermanence;
+  /** Nom(s) du ou des bénévoles ; vide = poste à pourvoir */
+  benevole?: string | null;
+  /** Nombre de personnes nécessaires (1 à 20) */
+  besoin: number;
+};
+
+export type CategorieDocument = 'inscription' | 'reglement' | 'assemblee' | 'autre';
+
+export type DocumentClub = Ref & {
+  titre: string;
+  url: string;
+  categorie: CategorieDocument;
+  ordre: number;
+};
+
+export type Preinscription = Ref & {
+  prenom: string;
+  nom: string;
+  dateNaissance: string;
+  sexe?: 'F' | 'M' | null;
+  email: string;
+  telephone: string;
+  categorieSouhaitee?: string | null;
+  dejaLicencie: boolean;
+  message?: string | null;
+  createdAt: string;
+  traitee: boolean;
 };

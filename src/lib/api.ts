@@ -1,7 +1,8 @@
 import type {
-  Actualite, Album, Club, Creneau, Equipe, Evenement, Gymnase, Joueur, LigneClassement, Participation, Partenaire, Produit, Rencontre, Tarif,
+  Actualite, Album, Club, Convocation, Creneau, DocumentClub, Equipe, Evenement, Gymnase, Joueur, LigneClassement, Participation, Partenaire, Permanence, Produit, Rencontre, Tarif,
 } from './types';
 import { aujourdhuiParis } from './format';
+import { bornesSaison } from './saison';
 
 /** URL de l'API Symfony, lue côté serveur uniquement. */
 export const API_URL = (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000').replace(/\/$/, '');
@@ -33,10 +34,23 @@ async function getJson<T>(path: string): Promise<T | null> {
   }
 }
 
+/** Taille de page maximale acceptée par l'API. */
+const PAR_PAGE = 200;
+/** Garde-fou : au-delà, la liste est tronquée (2 000 éléments). */
+const PAGES_MAX = 10;
+
+/** Liste complète : les pages suivantes sont chargées si la collection dépasse 200 éléments. */
 async function getList<T>(path: string): Promise<T[]> {
   const sep = path.includes('?') ? '&' : '?';
-  const data = await getJson<Collection<T>>(`${path}${sep}itemsPerPage=200`);
-  return membres(data);
+  const premiere = await getJson<Collection<T>>(`${path}${sep}itemsPerPage=${PAR_PAGE}`);
+  const items = membres(premiere);
+  const total = premiere?.totalItems ?? premiere?.['hydra:totalItems'] ?? items.length;
+  const pages = Math.min(Math.ceil(total / PAR_PAGE), PAGES_MAX);
+  if (pages <= 1) return items;
+  const suite = await Promise.all(
+    Array.from({ length: pages - 1 }, (_, i) => getJson<Collection<T>>(`${path}${sep}itemsPerPage=${PAR_PAGE}&page=${i + 2}`)),
+  );
+  return [...items, ...suite.flatMap((d) => membres(d))];
 }
 
 export const getClub = async () => (await getList<Club>('/api/clubs'))[0] ?? null;
@@ -64,6 +78,22 @@ export const getDerniersResultats = (query = '') =>
     r.filter((m) => m.scoreDom != null),
   );
 
+/** Matchs joués d'une saison (« 2025-2026 »), du plus récent au plus ancien ; la saison en cours s'arrête à aujourd'hui. */
+export function getResultatsSaison(saison: string, query = '') {
+  const { debut, fin } = bornesSaison(saison);
+  const auj = aujourdhui();
+  const jusqua = fin < auj ? fin : auj;
+  return getRencontres(`?date[after]=${debut}&date[before]=${jusqua}&order[date]=desc${query}`).then((r) =>
+    r.filter((m) => m.scoreDom != null),
+  );
+}
+
+/** Date du plus ancien match enregistré (toutes équipes ou une seule), pour proposer les saisons archivées. */
+export async function getDatePremierMatch(query = ''): Promise<string | null> {
+  const data = await getJson<Collection<Rencontre>>(`/api/rencontres?order[date]=asc&itemsPerPage=1${query}`);
+  return membres(data)[0]?.date ?? null;
+}
+
 export const getClassement = (championnatId: number) => getList<LigneClassement>(`/api/classements?championnat=${championnatId}`);
 export const getClassements = () => getList<LigneClassement>('/api/classements');
 export const getAlbums = () => getList<Album>('/api/albums');
@@ -79,3 +109,12 @@ export const getEvenements = (quand: 'avenir' | 'passes') => {
 };
 export const getJoueurs = (equipeId: number) => getList<Joueur>(`/api/joueurs?equipe=${equipeId}`);
 export const getParticipations = (equipeId: number) => getList<Participation>(`/api/participations?joueur.equipe=${equipeId}`);
+
+/** Convocations publiées des matchs à venir d'une équipe (les brouillons ne sont pas servis au public). */
+export const getConvocationsAVenir = (equipeId: number) =>
+  getList<Convocation>(`/api/convocations?rencontre.equipe=${equipeId}&rencontre.date[after]=${aujourdhui()}`);
+
+/** Permanences (arbitrage, table, buvette…) des matchs à venir. */
+export const getPermanencesAVenir = () => getList<Permanence>(`/api/permanences?rencontre.date[after]=${aujourdhui()}`);
+
+export const getDocuments = () => getList<DocumentClub>('/api/documents');
