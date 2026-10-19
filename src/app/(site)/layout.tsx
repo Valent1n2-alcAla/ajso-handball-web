@@ -1,10 +1,10 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getClub } from '@/lib/api';
+import { getClub, getPartenaires } from '@/lib/api';
 import { LOGO_SRC } from '@/lib/site';
 
 export default async function SiteLayout({ children }: LayoutProps<'/'>) {
-  const club = await getClub();
+  const [club, partenaires] = await Promise.all([getClub(), getPartenaires()]);
   const base = process.env.SITE_URL ?? 'http://localhost:3000';
   // Données structurées du club (moteurs de recherche)
   const jsonLd = {
@@ -28,7 +28,7 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <Header />
       <main id="contenu" tabIndex={-1} className="flex-1 overflow-x-hidden outline-none">{children}</main>
-      <Footer club={club} />
+      <Footer club={club} partenaires={partenaires} />
     </>
   );
 }

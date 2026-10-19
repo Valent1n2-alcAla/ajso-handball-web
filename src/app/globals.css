@@ -16,9 +16,32 @@
   --color-papier: #f4f5fb;
   --color-encre: #0a0f3c;
 
+  /* Résultats (contraste AA sur blanc et en texte blanc sur fond) */
+  --color-victoire: #0f8a4f;
+  --color-victoire-clair: #34d399;
+  --color-defaite: #d1264f;
+  --color-defaite-clair: #fb7185;
+
   --font-display: var(--font-anton), "Impact", sans-serif;
   --font-body: var(--font-barlow), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --animate-apparition: apparition 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-defilement: defilement 45s linear infinite;
+  --animate-pulsation: pulsation 2s ease-in-out infinite;
+
+  @keyframes apparition {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes defilement {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes pulsation {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
 }
 
 html {
@@ -29,6 +52,52 @@ body {
   background: #ffffff;
   color: var(--color-encre);
   font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--color-jaune);
+  color: var(--color-nuit);
+}
+
+/* Bandeau défilant : pause au survol / focus */
+.defilant:hover > *,
+.defilant:focus-within > * {
+  animation-play-state: paused;
+}
+
+/* Délais d'apparition échelonnés */
+.delai-1 { animation-delay: 0.08s; }
+.delai-2 { animation-delay: 0.16s; }
+.delai-3 { animation-delay: 0.24s; }
+.delai-4 { animation-delay: 0.32s; }
+
+/* Losange décoratif réutilisable */
+.losange {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* Barre de défilement discrète pour les rangées horizontales (filtres, onglets) */
+.rangee-defilante {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.rangee-defilante::-webkit-scrollbar {
+  display: none;
+}
+
+/* Pas d'animations décoratives pour qui ne les souhaite pas */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Dégradé signature du losange */
@@ -61,4 +130,12 @@ body {
 :focus-visible {
   outline: 3px solid var(--color-jaune);
   outline-offset: 2px;
+  /* Liseré nuit autour du jaune : anneau visible sur fond clair comme sur fond sombre */
+  box-shadow: 0 0 0 7px var(--color-nuit);
+}
+
+/* Cibles de focus programmatique (lien d'évitement vers <main>) : pas d'anneau */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
