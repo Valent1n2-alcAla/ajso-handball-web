@@ -17,6 +17,11 @@ export default async function MentionsPage() {
           {club?.email && <p>Contact : {club.email}</p>}
         </div>
         <div>
+          <h2 className="font-display text-2xl uppercase mb-2">Hébergeur</h2>
+          {/* Mention obligatoire (LCEN, art. 6) : à renseigner avec les coordonnées réelles de l'hébergeur. */}
+          <p>À compléter : nom, adresse et téléphone de l&apos;hébergeur du site.</p>
+        </div>
+        <div>
           <h2 className="font-display text-2xl uppercase mb-2">Données personnelles</h2>
           <p>
             Les informations transmises via le formulaire de contact sont utilisées uniquement pour répondre à votre demande

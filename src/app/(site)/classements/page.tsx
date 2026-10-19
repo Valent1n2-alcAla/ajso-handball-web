@@ -3,6 +3,7 @@ import Link from 'next/link';
 import TableClassement from '@/components/TableClassement';
 import { PageHero, Section, Vide } from '@/components/ui';
 import { getClassements, getEquipesClub } from '@/lib/api';
+import { competitionsEquipe } from '@/lib/format';
 import type { LigneClassement } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'Classements', description: "Classements des équipes de l'AJSO Handball dans leurs championnats." };
@@ -23,7 +24,7 @@ export default async function ClassementsPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {[...parChampionnat.entries()].map(([id, liste]) => {
             const champ = liste[0].championnat;
-            const nos = equipes.filter((e) => e.championnat?.id === id);
+            const nos = equipes.filter((e) => competitionsEquipe(e).some((c) => c.id === id));
             return (
               <div key={id}>
                 <p className="font-mono text-[11px] uppercase tracking-widest text-violet">{champ.niveau}</p>

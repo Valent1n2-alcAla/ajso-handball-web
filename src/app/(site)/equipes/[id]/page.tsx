@@ -10,6 +10,7 @@ import { Badge, BoutonLien, Vide } from '@/components/ui';
 import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getJoueurs, getParticipations, getProchainsMatchs } from '@/lib/api';
 import { competitionsEquipe, formatHeure, issue, JOURS, nomCompetition, recevant, visiteur } from '@/lib/format';
 import { bilan, LIBELLE_SERIE, statsJoueurs } from '@/lib/stats';
+import ImageContenu from '@/components/ImageContenu';
 
 export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): Promise<Metadata> {
   const equipe = await getEquipe((await params).id);
@@ -58,8 +59,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
       <section className="relative bg-nuit text-white overflow-hidden motif-losanges">
         {equipe.photo ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={equipe.photo} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <ImageContenu src={equipe.photo} alt="" fill preload sizes="100vw" className="object-cover" />
             <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-nuit via-nuit/80 to-nuit/20" />
           </>
         ) : (
@@ -182,7 +182,12 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
       <section id="matchs" className="bg-papier scroll-mt-36">
         <div className="max-w-[1400px] mx-auto px-4 md:px-10 py-16 grid gap-14">
           <div>
-            <h2 className="font-display text-3xl md:text-4xl uppercase mb-6">À venir</h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-4 mb-6">
+              <h2 className="font-display text-3xl md:text-4xl uppercase">À venir</h2>
+              <a href={`/equipes/${equipe.id}/calendrier.ics`} className="font-display uppercase tracking-wide text-roi hover:text-violet" title="Calendrier iCal : Google Agenda, Apple Calendrier, Outlook…">
+                Ajouter à mon agenda
+              </a>
+            </div>
             {prochains.length === 0 ? <Vide>Aucun match programmé.</Vide> : (
               <div className="divide-y divide-nuit/10 border-y border-nuit/10 bg-white px-4">{prochains.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
             )}

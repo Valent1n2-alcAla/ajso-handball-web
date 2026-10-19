@@ -4,10 +4,18 @@ import { notFound } from 'next/navigation';
 import { Section } from '@/components/ui';
 import { getActualite } from '@/lib/api';
 import { extrait, formatDatePub } from '@/lib/format';
+import ImageContenu from '@/components/ImageContenu';
 
 export async function generateMetadata({ params }: PageProps<'/actualites/[id]'>): Promise<Metadata> {
   const a = await getActualite((await params).id);
-  return a ? { title: a.titre, description: extrait(a.extrait ?? a.contenu, 160), openGraph: a.image ? { images: [a.image] } : undefined } : {};
+  if (!a) return {};
+  const description = extrait(a.extrait ?? a.contenu, 160);
+  return {
+    title: a.titre,
+    description,
+    // Remplace l'openGraph du layout racine : siteName, locale et image repris ici
+    openGraph: { type: 'article', siteName: 'AJSO Handball', locale: 'fr_FR', title: a.titre, description, publishedTime: a.datePub, images: [a.image ?? '/logo-ajso.png'] },
+  };
 }
 
 export default async function ActualitePage({ params }: PageProps<'/actualites/[id]'>) {
@@ -25,8 +33,7 @@ export default async function ActualitePage({ params }: PageProps<'/actualites/[
       </header>
       {a.image && (
         <div className="max-w-5xl mx-auto px-4 md:px-10 -mb-8 relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={a.image} alt="" className="w-full aspect-[16/9] object-cover -mt-0 md:mt-10 shadow-xl" />
+          <ImageContenu src={a.image} alt="" width={1600} height={900} preload sizes="(min-width: 1024px) 1024px, 100vw" className="w-full aspect-[16/9] object-cover -mt-0 md:mt-10 shadow-xl" />
         </div>
       )}
       <Section className="max-w-3xl!">

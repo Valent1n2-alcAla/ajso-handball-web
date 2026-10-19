@@ -3,7 +3,10 @@ import { PageHero, Section } from '@/components/ui';
 import { getClub, getGymnases } from '@/lib/api';
 import FormulaireContact from './FormulaireContact';
 
-export const metadata: Metadata = { title: 'Contact' };
+export const metadata: Metadata = {
+  title: 'Contact',
+  description: "Contactez l'AJS Ouistreham Handball : inscriptions, séances d'essai, partenariats ou bénévolat. Adresse et gymnases du club.",
+};
 
 export default async function ContactPage({ searchParams }: PageProps<'/contact'>) {
   const { sujet } = await searchParams;

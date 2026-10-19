@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from 'react';
 import { ajouterPhoto, definirCouverture, modifierPhoto, supprimerPhoto, televerser } from '@/app/admin/actions';
 import { preparerImage } from '@/lib/redimension';
 import type { Photo } from '@/lib/types';
+import ImageContenu from '@/components/ImageContenu';
 
 /** Photos d'un album : envoi multiple (une à une, avec progression), légende, couverture, suppression. */
 export default function GestionPhotos({ albumId, photos, couverture }: { albumId: string; photos: Photo[]; couverture?: string | null }) {
@@ -38,7 +39,11 @@ export default function GestionPhotos({ albumId, photos, couverture }: { albumId
     router.refresh();
   }
 
-  const agir = (fn: () => Promise<unknown>) => demarrer(async () => { await fn(); router.refresh(); });
+  const agir = (fn: () => Promise<{ erreur?: string }>) => demarrer(async () => {
+    const r = await fn().catch(() => ({ erreur: 'Action impossible.' }));
+    setErreurs(r.erreur ? [r.erreur] : []);
+    router.refresh();
+  });
 
   return (
     <div className="bg-white p-6 md:p-8 max-w-5xl mt-8">
@@ -54,8 +59,7 @@ export default function GestionPhotos({ albumId, photos, couverture }: { albumId
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {photos.map((p) => (
           <figure key={p.id} className={`border ${couverture === p.url ? 'border-jaune border-2' : 'border-nuit/10'}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p.url} alt="" className="w-full aspect-square object-cover" />
+            <ImageContenu src={p.url} alt="" width={300} height={300} sizes="(min-width: 1024px) 15vw, (min-width: 640px) 30vw, 50vw" className="w-full aspect-square object-cover" />
             <figcaption className="p-2 space-y-2">
               <input
                 defaultValue={p.legende ?? ''}

@@ -24,6 +24,16 @@ export default function Header() {
     return () => { document.removeEventListener('mousedown', clic); document.removeEventListener('keydown', touche); };
   }, [sousMenu]);
 
+  // Menu mobile : Échap le ferme, la page ne défile pas derrière
+  useEffect(() => {
+    if (!ouvert) return;
+    const touche = (e: KeyboardEvent) => { if (e.key === 'Escape') setOuvert(false); };
+    const avant = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', touche);
+    return () => { document.removeEventListener('keydown', touche); document.body.style.overflow = avant; };
+  }, [ouvert]);
+
   const fermer = () => { setOuvert(false); setSousMenu(false); };
   const lien = (href: string) => `relative py-2 transition-colors ${actif(href) ? 'text-white' : 'text-white/60 hover:text-white'}`;
 
@@ -31,7 +41,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-nuit/95 backdrop-blur text-white border-b border-white/10">
       <div className="max-w-[1400px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-3 shrink-0" onClick={fermer}>
-          <Logo size={52} />
+          <Logo size={52} prioritaire />
           <span className="leading-none">
             <span className="font-display text-2xl tracking-wide block">AJSO</span>
             <span className="font-mono text-[10px] tracking-[0.3em] text-glacier">HANDBALL</span>
