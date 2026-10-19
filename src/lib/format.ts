@@ -57,15 +57,16 @@ export function formatWeekEnd(date: string): string {
 }
 
 /** Date lisible d'un match, au week-end près si le jour n'est pas fixé. */
-export const formatDateMatch = (r: Rencontre) =>
+export const formatDateMatch = (r: Pick<Rencontre, 'date' | 'dateConfirmee'>) =>
   r.dateConfirmee === false ? formatWeekEnd(r.date) : formatDateLongue(r.date);
 
-export const formatHoraire = (r: Rencontre) =>
+export const formatHoraire = (r: Pick<Rencontre, 'dateConfirmee' | 'heure'>) =>
   r.dateConfirmee === false ? 'Date à confirmer' : r.heure ? formatHeure(r.heure) : 'Horaire à venir';
 
 /** Équipes dans l'ordre officiel : recevant à gauche, visiteur à droite. */
-export const recevant = (r: Rencontre) => (r.domicile ? r.equipe : r.equipeAdverse);
-export const visiteur = (r: Rencontre) => (r.domicile ? r.equipeAdverse : r.equipe);
+type Affiche = Pick<Rencontre, 'domicile' | 'equipe' | 'equipeAdverse'>;
+export const recevant = (r: Affiche) => (r.domicile ? r.equipe : r.equipeAdverse);
+export const visiteur = (r: Affiche) => (r.domicile ? r.equipeAdverse : r.equipe);
 
 /** scoreDom = score du recevant. Retourne le résultat vu de l'AJSO (V/N/D). */
 export function issue(r: Rencontre): { pour: number; contre: number; resultat: 'V' | 'N' | 'D' } | null {

@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LigneMatch } from '@/components/Match';
+import SelecteurSaison from '@/components/SelecteurSaison';
 import { PageHero, Section, Vide } from '@/components/ui';
-import { getDerniersResultats, getEquipesClub, getProchainsMatchs } from '@/lib/api';
+import { getDatePremierMatch, getEquipesClub, getProchainsMatchs, getResultatsSaison } from '@/lib/api';
+import { libelleSaison, lireSaison, saisonCourante, saisonsDisponibles } from '@/lib/saison';
 import { FUSEAU, parseDate } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
 import { styleCategorie } from '@/lib/categories';
@@ -26,17 +28,24 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
   const vue = sp.vue === 'resultats' ? 'resultats' : 'avenir';
   const equipeId = typeof sp.equipe === 'string' && /^\d+$/.test(sp.equipe) ? sp.equipe : '';
   const filtre = equipeId ? `&equipe=${equipeId}` : '';
+  const courante = saisonCourante();
+  const demandee = vue === 'resultats' ? lireSaison(sp.saison) : null;
 
-  const [equipes, matchs] = await Promise.all([
-    getEquipesClub(),
-    vue === 'resultats' ? getDerniersResultats(filtre) : getProchainsMatchs(filtre),
-  ]);
+  const [equipes, premierMatch] = await Promise.all([getEquipesClub(), vue === 'resultats' ? getDatePremierMatch() : null]);
+  const saisons = saisonsDisponibles(courante, premierMatch);
+  const saison = demandee && saisons.includes(demandee) ? demandee : courante;
+  const matchs = await (vue === 'resultats' ? getResultatsSaison(saison, filtre) : getProchainsMatchs(filtre));
+  const archive = vue === 'resultats' && saison !== courante;
 
-  const lien = (v: string, e: string) => `/calendrier?${new URLSearchParams({ ...(v === 'resultats' ? { vue: v } : {}), ...(e ? { equipe: e } : {}) })}`;
+  const lien = (v: string, e: string, s = saison) => `/calendrier?${new URLSearchParams({
+    ...(v === 'resultats' ? { vue: v } : {}),
+    ...(v === 'resultats' && s !== courante ? { saison: s } : {}),
+    ...(e ? { equipe: e } : {}),
+  })}`;
 
   return (
     <>
-      <PageHero surtitre="Saison en cours" titre={<>Calendrier <span className="text-jaune">&amp;</span> résultats</>} />
+      <PageHero surtitre={archive ? `Saison ${libelleSaison(saison)}` : 'Saison en cours'} titre={<>Calendrier <span className="text-jaune">&amp;</span> résultats</>} />
       <Section>
         <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-12">
           <nav className="inline-flex shrink-0 self-start bg-papier p-1.5" aria-label="Vue">
@@ -58,10 +67,11 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
             ))}
           </nav>
         </div>
+        {vue === 'resultats' && <SelecteurSaison saisons={saisons} active={saison} lien={(s) => lien('resultats', equipeId, s)} className="-mt-6 mb-12 -mx-4 px-4 md:mx-0 md:px-0 pb-1" />}
 
         {matchs.length === 0 ? (
           <Vide
-            titre={vue === 'resultats' ? 'Aucun résultat' : 'Aucun match programmé'}
+            titre={vue === 'resultats' ? (archive ? `Aucun résultat en ${libelleSaison(saison)}` : 'Aucun résultat') : 'Aucun match programmé'}
             action={vue === 'resultats' ? { href: lien('avenir', equipeId), label: 'Voir les matchs à venir' } : { href: lien('resultats', equipeId), label: 'Voir les résultats' }}
           >
             {vue === 'resultats' ? 'Les scores seront publiés ici après chaque rencontre.' : 'Les prochaines rencontres seront annoncées ici dès leur programmation.'}

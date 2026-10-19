@@ -9,7 +9,10 @@ import TableClassement from '@/components/TableClassement';
 import { Badge, BoutonLien, EnTete, Surtitre, Vide } from '@/components/ui';
 import Logo from '@/components/Logo';
 import { styleCategorie } from '@/lib/categories';
-import { getClassement, getCreneaux, getDerniersResultats, getEquipe, getJoueurs, getParticipations, getProchainsMatchs } from '@/lib/api';
+import CarteConvocation from '@/components/Convocation';
+import SelecteurSaison from '@/components/SelecteurSaison';
+import { getClassement, getConvocationsAVenir, getCreneaux, getDatePremierMatch, getEquipe, getJoueurs, getParticipations, getProchainsMatchs, getResultatsSaison } from '@/lib/api';
+import { libelleSaison, lireSaison, saisonCourante, saisonsDisponibles } from '@/lib/saison';
 import { competitionsEquipe, formatHeure, issue, JOURS, nomCompetition, recevant, visiteur } from '@/lib/format';
 import { bilan, LIBELLE_SERIE, statsJoueurs } from '@/lib/stats';
 import ImageContenu from '@/components/ImageContenu';
@@ -24,20 +27,30 @@ export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): 
   };
 }
 
-const ANCRES = [['effectif', 'Effectif'], ['stats', 'Stats'], ['matchs', 'Matchs'], ['classement', 'Classement'], ['entrainements', 'Entraînements']] as const;
+const ANCRES = [['convocations', 'Convocations'], ['effectif', 'Effectif'], ['stats', 'Stats'], ['matchs', 'Matchs'], ['classement', 'Classement'], ['entrainements', 'Entraînements']] as const;
 
-export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>) {
+export default async function EquipePage({ params, searchParams }: PageProps<'/equipes/[id]'>) {
   const { id } = await params;
+  const sp = await searchParams;
   const equipe = await getEquipe(id);
   if (!equipe || !equipe.estAjso) notFound();
 
   const filtre = `&equipe=${equipe.id}`;
   const competitions = competitionsEquipe(equipe);
-  const [prochains, resultats, creneaux, joueurs, participations, ...parCompetition] = await Promise.all([
-    getProchainsMatchs(filtre), getDerniersResultats(filtre), getCreneaux(`?equipe=${equipe.id}`),
-    getJoueurs(equipe.id), getParticipations(equipe.id),
+  const courante = saisonCourante();
+  const saisons = saisonsDisponibles(courante, await getDatePremierMatch(filtre));
+  const demandee = lireSaison(sp.saison);
+  // Saison affichée pour les résultats, le bilan, la forme et les statistiques
+  const saison = demandee && saisons.includes(demandee) ? demandee : courante;
+  const archive = saison !== courante;
+  const libelle = archive ? `Saison ${libelleSaison(saison)}` : 'Saison en cours';
+  const [prochains, resultats, creneaux, joueurs, toutesParticipations, convocations, ...parCompetition] = await Promise.all([
+    getProchainsMatchs(filtre), getResultatsSaison(saison, filtre), getCreneaux(`?equipe=${equipe.id}`),
+    getJoueurs(equipe.id), getParticipations(equipe.id), getConvocationsAVenir(equipe.id),
     ...competitions.map((c) => getClassement(c.id)),
   ]);
+  const matchsSaison = new Set(resultats.map((r) => r['@id'] ?? `/api/rencontres/${r.id}`));
+  const participations = toutesParticipations.filter((p) => matchsSaison.has(p.rencontre));
   // Classements publiés, la compétition la plus récente (dernière phase) en premier
   const classements = competitions.map((c, i) => ({ c, lignes: parCompetition[i] })).filter((x) => x.lignes.length).reverse();
   const classement = classements[0]?.lignes ?? [];
@@ -48,6 +61,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
   const nous = classement.find((l) => l.estAjso);
   const diff = b.butsPour - b.butsContre;
   const presentes = new Set([
+    convocations.length ? 'convocations' : '',
     joueurs.length || equipe.entraineur ? 'effectif' : '',
     stats.length ? 'stats' : '',
     'matchs',
@@ -92,6 +106,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
           {equipe.description && <p className="mt-6 max-w-2xl text-white/75 text-lg">{equipe.description}</p>}
 
           {/* Bandeau stats */}
+          {archive && <p className="mt-10 -mb-8 font-mono text-[11px] uppercase tracking-widest text-jaune">Bilan · {libelle}</p>}
           {b.joues > 0 && (
             <dl className="mt-12 grid grid-cols-3 md:grid-cols-6 border-t border-white/15">
               {[
@@ -131,7 +146,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
           {b.serie && (
             <div className="bg-papier p-7 flex flex-col justify-center gap-4 border-l-4 border-jaune">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Série en cours</p>
+                <p className="font-mono text-[11px] uppercase tracking-widest text-violet">{archive ? `Dernière série · ${libelleSaison(saison)}` : 'Série en cours'}</p>
                 <p className="font-display text-4xl uppercase">
                   {b.serie.longueur} {LIBELLE_SERIE[b.serie.resultat][b.serie.longueur > 1 ? 1 : 0]}
                 </p>
@@ -150,6 +165,16 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
               <p className="text-sm text-nuit/50">{b.butsPour} buts marqués · {b.butsContre} encaissés · {b.joues ? (b.butsPour / b.joues).toFixed(1).replace('.', ',') : 0} par match</p>
             </div>
           )}
+        </section>
+      )}
+
+      {/* ===== CONVOCATIONS ===== */}
+      {convocations.length > 0 && (
+        <section id="convocations" className="max-w-[1400px] mx-auto px-4 md:px-10 pt-16 md:pt-20 scroll-mt-36">
+          <EnTete surtitre="Prochains matchs" titre="Convocations" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {convocations.map((c) => <CarteConvocation key={c.id} c={c} />)}
+          </div>
         </section>
       )}
 
@@ -178,7 +203,7 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
       {/* ===== STATS JOUEURS ===== */}
       {stats.length > 0 && (
         <section id="stats" className="max-w-[1400px] mx-auto px-4 md:px-10 pb-16 scroll-mt-36">
-          <EnTete surtitre="Meilleurs buteurs" titre="Statistiques" />
+          <EnTete surtitre={archive ? `Meilleurs buteurs · ${libelle}` : 'Meilleurs buteurs'} titre="Statistiques" />
           <StatsJoueurs stats={stats} matchsEquipe={matchsSaisis} />
         </section>
       )}
@@ -202,9 +227,14 @@ export default async function EquipePage({ params }: PageProps<'/equipes/[id]'>)
             )}
           </div>
           <div>
-            <Surtitre className="text-violet mb-3">Saison en cours</Surtitre>
-            <h2 className="font-display text-4xl md:text-5xl uppercase leading-[1.02] mb-8">Résultats</h2>
-            {resultats.length === 0 ? <Vide titre="Pas encore de résultat">Les scores seront publiés après chaque match.</Vide> : (
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+              <div>
+                <Surtitre className="text-violet mb-3">{libelle}</Surtitre>
+                <h2 className="font-display text-4xl md:text-5xl uppercase leading-[1.02]">Résultats</h2>
+              </div>
+              <SelecteurSaison saisons={saisons} active={saison} lien={(s) => `/equipes/${equipe.id}${s === courante ? '' : `?saison=${s}`}#matchs`} className="max-w-full" />
+            </div>
+            {resultats.length === 0 ? <Vide titre={archive ? 'Aucun résultat cette saison' : 'Pas encore de résultat'}>{archive ? `Aucun score enregistré pour la saison ${libelleSaison(saison)}.` : 'Les scores seront publiés après chaque match.'}</Vide> : (
               <div className="divide-y divide-nuit/10 bg-white shadow-sm">{resultats.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
             )}
           </div>
