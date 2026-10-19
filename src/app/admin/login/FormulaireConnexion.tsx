@@ -5,10 +5,11 @@ import { connexion } from '../actions';
 
 const input = 'w-full bg-papier border-2 border-transparent focus:border-violet outline-none px-4 py-3';
 
-export default function FormulaireConnexion() {
+export default function FormulaireConnexion({ retour }: { retour: string }) {
   const [etat, action, enCours] = useActionState(connexion, {});
   return (
     <form action={action} className="space-y-5">
+      <input type="hidden" name="next" value={retour} />
       <label className="block">
         <span className="font-mono text-[11px] uppercase tracking-widest text-nuit/60">Email</span>
         <input name="email" type="email" required autoComplete="username" defaultValue={etat.valeurs?.email as string | undefined} className={input} />

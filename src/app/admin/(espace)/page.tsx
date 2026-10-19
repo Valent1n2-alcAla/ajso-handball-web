@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { apiAdmin } from '@/lib/auth';
 import { RESSOURCES } from '@/lib/admin-ressources';
+import { aujourdhuiParis } from '@/lib/format';
 
 async function total(path: string): Promise<number | null> {
   const res = await apiAdmin(`${path}${path.includes('?') ? '&' : '?'}itemsPerPage=1`);
@@ -10,7 +11,7 @@ async function total(path: string): Promise<number | null> {
 }
 
 export default async function TableauDeBord() {
-  const auj = new Date().toISOString().slice(0, 10);
+  const auj = aujourdhuiParis();
   const [nonLus, aVenir, actus, equipes] = await Promise.all([
     total('/api/message_contacts?lu=false'),
     total(`/api/rencontres?date[after]=${auj}`),

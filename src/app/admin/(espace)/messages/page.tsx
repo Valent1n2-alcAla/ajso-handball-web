@@ -1,16 +1,19 @@
 import { marquerMessage, supprimerMessage } from '../../actions';
 import BoutonConfirmer from '@/components/admin/BoutonConfirmer';
 import { listeAdmin } from '@/lib/auth';
+import { FUSEAU } from '@/lib/format';
 import type { MessageContact } from '@/lib/types';
 
 export const metadata = { title: 'Messages' };
 
-export default async function MessagesPage() {
+export default async function MessagesPage({ searchParams }: PageProps<'/admin/messages'>) {
+  const { erreur } = await searchParams;
   const messages = await listeAdmin<MessageContact>('/api/message_contacts');
 
   return (
     <>
       <h1 className="font-display text-4xl md:text-5xl uppercase mb-6">Messages</h1>
+      {erreur && <p className="bg-rose-50 text-rose-700 px-4 py-3 mb-4" role="alert">L&apos;opération a échoué. Réessayez.</p>}
       {messages.length === 0 && <p className="bg-white p-10 text-center text-nuit/40">Aucun message reçu.</p>}
       <div className="space-y-3">
         {messages.map((m) => (
@@ -19,7 +22,7 @@ export default async function MessagesPage() {
               {!m.lu && <span className="w-2 h-2 rounded-full bg-violet" aria-label="Non lu" />}
               <span className={m.lu ? '' : 'font-semibold'}>{m.sujet}</span>
               <span className="text-nuit/50 text-sm">{m.nom}</span>
-              <span className="ml-auto font-mono text-xs text-nuit/40">{new Date(m.createdAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+              <span className="ml-auto font-mono text-xs text-nuit/40">{new Date(m.createdAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: FUSEAU })}</span>
             </summary>
             <div className="px-5 pb-5 border-t border-nuit/5 pt-4">
               <p className="text-sm text-nuit/60 mb-3">

@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
 import { listeAdmin } from '@/lib/auth';
-import { nomCompetition } from '@/lib/format';
+import { maintenantParis, nomCompetition } from '@/lib/format';
 import { RESSOURCES, type Ressource } from '@/lib/admin-ressources';
 import type { Option } from '@/components/admin/FormulaireRessource';
 
 export function ressourceOu404(cle: string): Ressource {
-  const r = RESSOURCES[cle];
-  if (!r) notFound();
-  return r;
+  if (!Object.hasOwn(RESSOURCES, cle)) notFound();
+  return RESSOURCES[cle];
 }
 
 type Item = Record<string, unknown> & { '@id'?: string; id?: number; nom?: string; titre?: string };
@@ -31,15 +30,9 @@ export function valeursInitiales(r: Ressource, item: Item | null): Record<string
     if (c.type === 'checkbox') v[c.nom] = item ? brut === true : c.defaut ?? ['estAjso', 'domicile', 'dateConfirmee', 'disponible'].includes(c.nom);
     else if (c.type === 'relations') v[c.nom] = Array.isArray(brut) ? brut.map((x) => (x && typeof x === 'object' ? String((x as Item)['@id']) : String(x))) : [];
     else if (c.type === 'relation') v[c.nom] = brut && typeof brut === 'object' ? String((brut as Item)['@id']) : String(brut ?? '');
-    else if (c.type === 'datetime-local') v[c.nom] = brut ? String(brut).slice(0, 16) : c.requis ? maintenantLocal() : '';
+    else if (c.type === 'datetime-local') v[c.nom] = brut ? String(brut).slice(0, 16) : c.requis ? maintenantParis() : '';
     else if (c.type === 'date') v[c.nom] = brut ? String(brut).slice(0, 10) : '';
     else v[c.nom] = brut == null ? '' : String(brut);
   }
   return v;
-}
-
-/** Date et heure locales au format des champs datetime-local. */
-function maintenantLocal(): string {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
