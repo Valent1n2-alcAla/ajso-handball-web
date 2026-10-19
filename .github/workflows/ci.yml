@@ -21,6 +21,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       # Types des routes (PageProps, LayoutProps…) générés sans build complet
       - run: npx next typegen
       - run: npm run typecheck
