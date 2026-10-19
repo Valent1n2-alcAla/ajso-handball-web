@@ -5,6 +5,7 @@ import { PageHero, Section, Vide } from '@/components/ui';
 import { getDerniersResultats, getEquipesClub, getProchainsMatchs } from '@/lib/api';
 import { FUSEAU, parseDate } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
+import { styleCategorie } from '@/lib/categories';
 
 export const metadata: Metadata = {
   title: 'Calendrier & résultats',
@@ -37,31 +38,44 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
     <>
       <PageHero surtitre="Saison en cours" titre={<>Calendrier <span className="text-jaune">&amp;</span> résultats</>} />
       <Section>
-        <nav className="flex flex-wrap gap-2 mb-6" aria-label="Vue">
-          {[['avenir', 'À venir'], ['resultats', 'Résultats']].map(([v, l]) => (
-            <Link key={v} href={lien(v, equipeId)} aria-current={vue === v ? 'page' : undefined}
-              className={`font-display uppercase tracking-wide text-lg px-6 py-3 ${vue === v ? 'bg-nuit text-white' : 'bg-papier hover:bg-nuit/10'}`}>
-              {l}
-            </Link>
-          ))}
-        </nav>
-        <nav className="flex flex-wrap gap-2 mb-12" aria-label="Filtrer par équipe">
-          <Link href={lien(vue, '')} aria-current={!equipeId ? 'page' : undefined} className={`text-sm px-4 py-2 border ${!equipeId ? 'border-violet bg-violet text-white' : 'border-nuit/15 hover:border-violet'}`}>Toutes</Link>
-          {equipes.map((e) => (
-            <Link key={e.id} href={lien(vue, String(e.id))} aria-current={equipeId === String(e.id) ? 'page' : undefined}
-              className={`text-sm px-4 py-2 border ${equipeId === String(e.id) ? 'border-violet bg-violet text-white' : 'border-nuit/15 hover:border-violet'}`}>
-              {e.nom}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-12">
+          <nav className="inline-flex shrink-0 self-start bg-papier p-1.5" aria-label="Vue">
+            {[['avenir', 'À venir'], ['resultats', 'Résultats']].map(([v, l]) => (
+              <Link key={v} href={lien(v, equipeId)} aria-current={vue === v ? 'page' : undefined}
+                className={`font-display uppercase tracking-wide text-lg px-6 py-2.5 transition-colors ${vue === v ? 'bg-nuit text-white shadow-md' : 'text-nuit/70 hover:text-nuit'}`}>
+                {l}
+              </Link>
+            ))}
+          </nav>
+          <nav className="rangee-defilante flex lg:flex-wrap gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1" aria-label="Filtrer par équipe">
+            <Link href={lien(vue, '')} aria-current={!equipeId ? 'page' : undefined} className={`shrink-0 text-sm font-semibold px-4 py-2 border-2 transition-colors ${!equipeId ? 'border-violet bg-violet text-white' : 'border-nuit/10 hover:border-violet'}`}>Toutes les équipes</Link>
+            {equipes.map((e) => (
+              <Link key={e.id} href={lien(vue, String(e.id))} aria-current={equipeId === String(e.id) ? 'page' : undefined} style={styleCategorie(e)}
+                className={`shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 border-2 whitespace-nowrap transition-colors ${equipeId === String(e.id) ? 'border-violet bg-violet text-white' : 'border-nuit/10 hover:border-violet'}`}>
+                <span aria-hidden className="w-2 h-2 rotate-45 bg-(--cat)" />
+                {e.nom}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
         {matchs.length === 0 ? (
-          <Vide>{vue === 'resultats' ? 'Aucun résultat pour le moment.' : 'Aucun match programmé.'}</Vide>
+          <Vide
+            titre={vue === 'resultats' ? 'Aucun résultat' : 'Aucun match programmé'}
+            action={vue === 'resultats' ? { href: lien('avenir', equipeId), label: 'Voir les matchs à venir' } : { href: lien('resultats', equipeId), label: 'Voir les résultats' }}
+          >
+            {vue === 'resultats' ? 'Les scores seront publiés ici après chaque rencontre.' : 'Les prochaines rencontres seront annoncées ici dès leur programmation.'}
+          </Vide>
         ) : (
           <div className="space-y-12">
             {parMois(matchs).map(([mois, liste]) => (
               <div key={mois}>
-                <h2 className="font-display text-2xl md:text-3xl uppercase text-violet mb-2">{mois}</h2>
+                <h2 className="flex items-center gap-4 font-display text-3xl md:text-4xl uppercase mb-4">
+                  <span aria-hidden className="w-3 h-3 rotate-45 bg-jaune" />
+                  {mois}
+                  <span aria-hidden className="flex-1 h-px bg-nuit/10" />
+                  <span className="font-mono text-xs tracking-widest text-nuit/60">{liste.length} match{liste.length > 1 ? 's' : ''}</span>
+                </h2>
                 <div className="divide-y divide-nuit/10 border-y border-nuit/10">
                   {liste.map((r) => <LigneMatch key={r.id} r={r} />)}
                 </div>

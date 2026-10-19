@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import TableClassement from '@/components/TableClassement';
-import { PageHero, Section, Vide } from '@/components/ui';
+import { PageHero, Section, Surtitre, Vide } from '@/components/ui';
 import { getClassements, getEquipesClub } from '@/lib/api';
 import { competitionsEquipe } from '@/lib/format';
 import type { LigneClassement } from '@/lib/types';
@@ -20,21 +20,27 @@ export default async function ClassementsPage() {
         Mis à jour automatiquement depuis le site de la Fédération Française de Handball.
       </PageHero>
       <Section>
-        {parChampionnat.size === 0 && <Vide>Les classements apparaîtront après les premières journées.</Vide>}
-        <div className="grid lg:grid-cols-2 gap-12">
+        {parChampionnat.size === 0 && (
+          <Vide titre="Classements bientôt disponibles" action={{ href: '/calendrier', label: 'Voir le calendrier' }}>
+            Les classements apparaîtront après les premières journées de championnat.
+          </Vide>
+        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-16">
           {[...parChampionnat.entries()].map(([id, liste]) => {
             const champ = liste[0].championnat;
             const nos = equipes.filter((e) => competitionsEquipe(e).some((c) => c.id === id));
             return (
-              <div key={id}>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-violet">{champ.niveau}</p>
-                <h2 className="font-display text-3xl uppercase mb-1">{champ.nom}</h2>
-                <p className="text-sm text-nuit/50 mb-5">
-                  {nos.map((e, i) => (
-                    <span key={e.id}>{i > 0 && ' · '}<Link href={`/equipes/${e.id}`} className="text-roi hover:underline">{e.nom}</Link></span>
+              <div key={id} className="min-w-0">
+                <Surtitre className="text-violet mb-3">{champ.niveau || 'Championnat'}</Surtitre>
+                <h2 className="font-display text-3xl md:text-4xl uppercase leading-[1.02]">{champ.nom}</h2>
+                <p className="flex flex-wrap gap-2 mt-3 mb-6">
+                  {nos.map((e) => (
+                    <Link key={e.id} href={`/equipes/${e.id}`} className="inline-flex items-center gap-1.5 bg-papier hover:bg-roi hover:text-white transition-colors px-3 py-1 text-sm font-semibold text-roi">
+                      {e.nom} <span aria-hidden>→</span>
+                    </Link>
                   ))}
                 </p>
-                <TableClassement lignes={liste} />
+                <TableClassement lignes={liste} legende={`Classement ${champ.nom}`} />
               </div>
             );
           })}

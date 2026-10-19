@@ -1,9 +1,9 @@
 import type { Resultat } from '@/lib/stats';
 
 const STYLE: Record<Resultat, string> = {
-  V: 'bg-emerald-500 text-white',
+  V: 'bg-victoire text-white',
   N: 'bg-jaune text-nuit',
-  D: 'bg-rose-500 text-white',
+  D: 'bg-defaite text-white',
 };
 const TITRE: Record<Resultat, string> = { V: 'Victoire', N: 'Nul', D: 'Défaite' };
 
