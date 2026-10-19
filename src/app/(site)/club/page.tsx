@@ -20,7 +20,7 @@ export default async function ClubPage() {
         {club?.nom ?? 'AJS Ouistreham Handball'}
       </PageHero>
 
-      <Section className="grid md:grid-cols-[1fr_1.4fr] gap-12 items-center">
+      <Section className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-12 items-center">
         <div className="relative flex justify-center">
           <div aria-hidden className="absolute inset-8 rotate-45 bg-losange opacity-15" />
           <Logo size={300} className="relative" />
@@ -46,29 +46,30 @@ export default async function ClubPage() {
       </Section>
 
       <section className="bg-nuit text-white motif-losanges">
-        <Section titre="Nos valeurs">
-          <div className="grid md:grid-cols-3 gap-6">
+        <Section sombre surtitre="L'esprit AJSO" titre="Nos valeurs">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {VALEURS.map(([t, d], i) => (
-              <div key={t} className="border border-white/10 p-8 relative overflow-hidden">
-                <span className="font-display text-7xl text-white/5 absolute right-4 top-2">{i + 1}</span>
+              <div key={t} className="group border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] transition-colors p-8 relative overflow-hidden">
+                <span aria-hidden className="font-display text-8xl text-white/10 absolute right-5 top-1 leading-none">{i + 1}</span>
+                <span aria-hidden className="block w-8 h-1 bg-jaune mb-6 transition-all group-hover:w-16" />
                 <h3 className="font-display text-3xl uppercase text-jaune mb-3">{t}</h3>
-                <p className="text-white/70">{d}</p>
+                <p className="text-white/75">{d}</p>
               </div>
             ))}
           </div>
         </Section>
       </section>
 
-      <Section titre="Le bureau">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Section surtitre="Dirigeants" titre="Le bureau">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {club?.president && (
-            <div className="bg-papier p-7">
+            <div className="bg-papier p-7 border-l-4 border-violet">
               <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Président</p>
               <p className="font-display text-2xl uppercase mt-1">{club.president}</p>
             </div>
           )}
           {club?.contact && club.contact !== club.president && (
-            <div className="bg-papier p-7">
+            <div className="bg-papier p-7 border-l-4 border-roi">
               <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Contact</p>
               <p className="font-display text-2xl uppercase mt-1">{club.contact}</p>
             </div>
@@ -82,13 +83,13 @@ export default async function ClubPage() {
       </Section>
 
       <section className="bg-papier">
-        <Section titre="Nos gymnases">
-          <div className="grid md:grid-cols-2 gap-6">
+        <Section surtitre="Où nous trouver" titre="Nos gymnases">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {gymnases.map((g) => {
               const adresse = [g.adresse, g.codePostal, g.ville].filter(Boolean).join(' ');
               return (
-                <div key={g.id} className="bg-white p-8 flex flex-col gap-4">
-                  <h3 className="font-display text-3xl uppercase">{g.nom}</h3>
+                <div key={g.id} className="relative bg-white p-8 pl-10 flex flex-col gap-4 shadow-sm hover:shadow-xl hover:shadow-nuit/10 transition-shadow before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-losange">
+                  <h3 className="font-display text-3xl uppercase leading-[1.02]">{g.nom}</h3>
                   <p className="text-nuit/70">{adresse}</p>
                   <a href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(adresse)}`} target="_blank" rel="noopener noreferrer"
                     className="font-display uppercase text-roi hover:text-violet self-start">Itinéraire →</a>

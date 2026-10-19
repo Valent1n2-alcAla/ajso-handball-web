@@ -28,7 +28,7 @@ export default async function ActualitePage({ params }: PageProps<'/actualites/[
         <div className="max-w-4xl mx-auto px-4 md:px-10 pt-14 pb-16">
           <Link href="/actualites" className="font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">← Actualités</Link>
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-jaune mt-8 mb-4">{formatDatePub(a.datePub)}</p>
-          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[0.95]">{a.titre}</h1>
+          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[1.02]">{a.titre}</h1>
         </div>
       </header>
       {a.image && (

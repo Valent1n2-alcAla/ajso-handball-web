@@ -27,7 +27,7 @@ export default function FormulaireContact({ sujetInitial = '' }: { sujetInitial?
       <div className="hidden" aria-hidden>
         <label>Site web<input name="site" tabIndex={-1} autoComplete="off" /></label>
       </div>
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <label className="block">
           <span className="font-mono text-[11px] uppercase tracking-widest text-nuit/60">Nom *</span>
           <input name="nom" required maxLength={100} autoComplete="name" {...aria('nom')} defaultValue={val('nom')} className={input} />
@@ -39,7 +39,7 @@ export default function FormulaireContact({ sujetInitial = '' }: { sujetInitial?
           {err('email')}
         </label>
       </div>
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <label className="block">
           <span className="font-mono text-[11px] uppercase tracking-widest text-nuit/60">Téléphone</span>
           <input name="telephone" type="tel" maxLength={30} autoComplete="tel" {...aria('telephone')} defaultValue={val('telephone')} className={input} />

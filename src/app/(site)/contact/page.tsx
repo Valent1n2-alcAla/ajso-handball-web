@@ -15,7 +15,7 @@ export default async function ContactPage({ searchParams }: PageProps<'/contact'
   return (
     <>
       <PageHero surtitre="Une question ?" titre="Contact" />
-      <Section className="grid lg:grid-cols-[1.4fr_1fr] gap-12">
+      <Section className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-12">
         <FormulaireContact sujetInitial={typeof sujet === 'string' ? sujet.slice(0, 100) : ''} />
         <aside className="space-y-4">
           <div className="bg-nuit text-white p-8 motif-losanges space-y-4">

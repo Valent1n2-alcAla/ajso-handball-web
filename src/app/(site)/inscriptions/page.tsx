@@ -20,8 +20,8 @@ export default async function InscriptionsPage() {
         Filles et garçons dès 3 ans, débutants ou confirmés : il y a une place pour toi chez les Ratons.
       </PageHero>
 
-      <Section titre="Comment s'inscrire ?">
-        <ol className="grid md:grid-cols-4 gap-4">
+      <Section surtitre="En quatre étapes" titre="Comment s'inscrire ?">
+        <ol className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {ETAPES.map(([t, d], i) => (
             <li key={t} className="bg-papier p-7 relative">
               <span className="font-display text-6xl text-violet/20 absolute right-5 top-3">{i + 1}</span>
@@ -33,9 +33,9 @@ export default async function InscriptionsPage() {
       </Section>
 
       <section className="bg-nuit text-white motif-losanges">
-        <Section titre="Tarifs">
+        <Section sombre surtitre="Saison en cours" titre="Tarifs">
           {tarifs.length === 0 ? <p className="text-white/50">Tarifs de la saison bientôt disponibles.</p> : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tarifs.map((t) => (
                 <div key={t.id} className="border border-white/15 p-7 flex flex-col">
                   <p className="font-display text-2xl uppercase">{t.categorie}</p>

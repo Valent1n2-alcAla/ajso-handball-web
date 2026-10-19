@@ -17,7 +17,7 @@ export default async function GaleriePage() {
       <PageHero surtitre="En images" titre="Galerie">Matchs, tournois et moments du club.</PageHero>
       <Section>
         {albums.length === 0 ? <Vide>Les premiers albums arrivent bientôt.</Vide> : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {albums.map((a) => (
               <Link key={a.id} href={`/galerie/${a.id}`} className="group block">
                 <div className="aspect-[4/3] bg-losange overflow-hidden relative">

@@ -29,7 +29,7 @@ export default async function TableauDeBord() {
   return (
     <>
       <h1 className="font-display text-4xl md:text-5xl uppercase mb-8">Tableau de bord</h1>
-      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-12">
         {tuiles.map((t) => (
           <Link key={t.label} href={t.href} className={`p-6 ${t.accent && t.valeur ? 'bg-losange text-white' : 'bg-white hover:shadow-md'}`}>
             <p className="font-mono text-[11px] uppercase tracking-widest opacity-70">{t.label}</p>

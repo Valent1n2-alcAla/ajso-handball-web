@@ -13,7 +13,7 @@ export default function StatsJoueurs({ stats, matchsEquipe }: { stats: StatJoueu
   return (
     <div className="space-y-10">
       {podium.length > 0 && (
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {podium.map((s, i) => (
             <div key={s.joueur.id} className={`relative overflow-hidden p-6 ${i === 0 ? 'bg-losange text-white' : 'bg-nuit text-white'}`}>
               <span aria-hidden className="absolute -right-3 -top-6 font-display text-[7rem] leading-none text-white/10">{i + 1}</span>

@@ -11,15 +11,15 @@ export default async function AgendaPage() {
   return (
     <>
       <PageHero surtitre="Vie du club" titre="Agenda">Tournois, stages, moments festifs : les rendez-vous des Ratons hors championnat.</PageHero>
-      <Section titre="À venir">
+      <Section surtitre="Prochains rendez-vous" titre="À venir">
         {avenir.length === 0 ? <Vide>Aucun événement programmé pour le moment.</Vide> : (
-          <div className="grid md:grid-cols-2 gap-6">{avenir.map((e) => <CarteEvenement key={e.id} e={e} />)}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">{avenir.map((e) => <CarteEvenement key={e.id} e={e} />)}</div>
         )}
       </Section>
       {passes.length > 0 && (
         <section className="bg-papier">
-          <Section titre="C'était…">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Section surtitre="Souvenirs" titre="C'était…">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {passes.slice(0, 9).map((e) => <CarteEvenement key={e.id} e={e} passe />)}
             </div>
           </Section>

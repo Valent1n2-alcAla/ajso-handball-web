@@ -18,7 +18,7 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
   const [etat, soumettre, enCours] = useActionState(action, {});
 
   return (
-    <form action={soumettre} className="grid md:grid-cols-2 gap-x-6 gap-y-5">
+    <form action={soumettre} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
       {champs.map((c) => {
         const v = etat.valeurs ? etat.valeurs[c.nom] : valeurs[c.nom];
         const erreur = etat.erreurs?.[c.nom];
@@ -35,7 +35,7 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
         } else if (c.type === 'relations') {
           const coches = Array.isArray(v) ? v : [];
           controle = (
-            <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1 border border-nuit/15 bg-white p-3 max-h-60 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 border border-nuit/15 bg-white p-3 max-h-60 overflow-y-auto">
               {(options[c.nom] ?? []).map((o) => (
                 <label key={o.valeur} className="flex items-center gap-2 py-1 cursor-pointer text-sm">
                   <input type="checkbox" name={c.nom} value={o.valeur} defaultChecked={coches.includes(o.valeur)} className="w-4 h-4 accent-violet" />

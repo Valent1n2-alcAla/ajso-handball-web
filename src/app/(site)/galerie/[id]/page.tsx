@@ -27,7 +27,7 @@ export default async function AlbumPage({ params }: PageProps<'/galerie/[id]'>) 
         <div className="max-w-[1400px] mx-auto px-4 md:px-10 pt-14 pb-14">
           <Link href="/galerie" className="font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">← Galerie</Link>
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-jaune mt-8 mb-3 capitalize">{formatDateLongue(album.date)}</p>
-          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[0.95]">{album.titre}</h1>
+          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[1.02]">{album.titre}</h1>
           {album.description && <p className="text-white/70 mt-5 max-w-2xl text-lg">{album.description}</p>}
         </div>
       </header>
