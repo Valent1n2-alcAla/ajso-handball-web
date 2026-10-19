@@ -128,6 +128,22 @@ export async function marquerMessage(id: string, lu: boolean) {
   revalidatePath('/admin', 'layout');
 }
 
+export async function marquerPreinscription(id: string, traitee: boolean) {
+  const res = await apiAdmin(`/api/preinscriptions/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify({ traitee }),
+  });
+  if (!res.ok) redirect('/admin/preinscriptions?erreur=1');
+  revalidatePath('/admin', 'layout');
+}
+
+export async function supprimerPreinscription(id: string) {
+  const res = await apiAdmin(`/api/preinscriptions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) redirect('/admin/preinscriptions?erreur=1');
+  revalidatePath('/admin', 'layout');
+}
+
 export async function supprimerMessage(id: string) {
   const res = await apiAdmin(`/api/message_contacts/${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) redirect('/admin/messages?erreur=1');
@@ -139,12 +155,16 @@ export type ResultatEnvoi = { url?: string; erreur?: string };
 const TYPES_IMAGE = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const TAILLE_MAX = 10 * 1024 * 1024;
 
-/** Envoie une image à l'API (public/uploads) et renvoie son URL publique. */
+/** Envoie une image (ou, si `documents` est coché, un PDF) à l'API (public/uploads) et renvoie son URL publique. */
 export async function televerser(fd: FormData): Promise<ResultatEnvoi> {
   const fichier = fd.get('fichier');
+  const pdfAccepte = fd.get('documents') === '1';
   if (!(fichier instanceof File) || fichier.size === 0) return { erreur: 'Aucun fichier.' };
-  if (!TYPES_IMAGE.includes(fichier.type)) return { erreur: 'Format non accepté : JPG, PNG, WebP ou GIF uniquement.' };
-  if (fichier.size > TAILLE_MAX) return { erreur: 'Image trop lourde (10 Mo maximum).' };
+  const estPdf = fichier.type === 'application/pdf';
+  if (!TYPES_IMAGE.includes(fichier.type) && !(pdfAccepte && estPdf)) {
+    return { erreur: pdfAccepte ? 'Format non accepté : PDF, JPG, PNG, WebP ou GIF uniquement.' : 'Format non accepté : JPG, PNG, WebP ou GIF uniquement.' };
+  }
+  if (fichier.size > TAILLE_MAX) return { erreur: `${estPdf ? 'Document' : 'Image'} trop lourd${estPdf ? '' : 'e'} (10 Mo maximum).` };
   const envoi = new FormData();
   envoi.append('fichier', fichier, fichier.name);
   const res = await apiAdmin('/api/medias', { method: 'POST', body: envoi });
@@ -204,5 +224,6 @@ export async function importerFfhb(equipeId: string): Promise<ResultatImport> {
   if (!data) return { erreur: "Réponse inattendue de l'API." };
   rafraichir();
   const avert = [...(data.infos ?? []), ...(data.ignorees ?? [])].map((m: string) => ` ⚠ ${m}`).join('');
-  return { ok: `${data.competitions} compétition(s) : ${data.crees} match(s) ajouté(s), ${data.maj} mis à jour, classements : ${data.classement} lignes.${avert}` };
+  const retires = typeof data.retires === 'number' ? `, ${data.retires} retiré(s) (disparus du site fédéral)` : '';
+  return { ok: `${data.competitions} compétition(s) : ${data.crees} match(s) ajouté(s), ${data.maj} mis à jour${retires}, classements : ${data.classement} lignes.${avert}` };
 }

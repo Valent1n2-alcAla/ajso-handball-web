@@ -19,9 +19,9 @@ const apiLocale = originesImages.some((o) => /^https?:\/\/(localhost|127\.|10\.|
 
 const nextConfig: NextConfig = {
   experimental: {
-    // Envoi de photos depuis l'admin (réduites à ~1 Mo dans le navigateur ; marge pour les originaux)
-    serverActions: { bodySizeLimit: '10mb' },
-    proxyClientMaxBodySize: '10mb',
+    // Envoi de photos (réduites à ~1 Mo dans le navigateur) et de PDF jusqu'à 10 Mo depuis l'admin, en-têtes multipart compris
+    serverActions: { bodySizeLimit: '11mb' },
+    proxyClientMaxBodySize: '11mb',
   },
   // Lu par src/lib/images.ts (serveur et navigateur) : les autres URL d'images ne sont pas optimisées.
   env: { IMAGES_ORIGINES: originesImages.join(' ') },

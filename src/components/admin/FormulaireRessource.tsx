@@ -1,11 +1,68 @@
 'use client';
 
-import { useActionState } from 'react';
+import { Fragment, useActionState, useState } from 'react';
 import type { EtatFormulaire } from '@/app/admin/actions';
 import type { Champ } from '@/lib/admin-ressources';
+import ChampFichier from './ChampFichier';
 import ChampImage from './ChampImage';
 
-export type Option = { valeur: string; libelle: string };
+export type Option = {
+  valeur: string;
+  libelle: string;
+  /** Intitulé de groupe (optgroup, titre de bloc de cases) */
+  groupe?: string;
+  /** Clé de filtrage partagée avec un champ lié (ex. IRI de l'équipe) */
+  filtre?: string;
+};
+
+/** Options regroupées en conservant l'ordre d'arrivée. */
+function grouper(opts: Option[]): [string, Option[]][] {
+  const g = new Map<string, Option[]>();
+  for (const o of opts) g.set(o.groupe ?? '', [...(g.get(o.groupe ?? '') ?? []), o]);
+  return [...g.entries()];
+}
+
+/** Cases à cocher multiples, regroupées, éventuellement restreintes à une clé de filtrage (les cases cochées restent visibles). */
+function CasesMultiples({ nom, options, coches: initiales, filtre }: { nom: string; options: Option[]; coches: string[]; filtre?: string }) {
+  const [coches, setCoches] = useState(() => new Set(initiales));
+  const [tous, setTous] = useState(false);
+  const visible = (o: Option) => tous || !filtre || o.filtre === filtre || coches.has(o.valeur);
+  const masques = options.filter((o) => !visible(o)).length;
+  const basculer = (v: string) => setCoches((s) => { const n = new Set(s); if (n.has(v)) n.delete(v); else n.add(v); return n; });
+
+  return (
+    <div className="border border-nuit/15 bg-white">
+      <div className="p-3 max-h-72 overflow-y-auto space-y-3">
+        {options.length === 0 && <p className="text-sm text-nuit/50">Aucun choix disponible.</p>}
+        {grouper(options).map(([groupe, opts]) => {
+          const affiches = opts.filter(visible);
+          if (!affiches.length) return null;
+          return (
+            <fieldset key={groupe}>
+              {groupe && <legend className="font-mono text-[10px] uppercase tracking-widest text-violet mb-1">{groupe}</legend>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                {affiches.map((o) => (
+                  <label key={o.valeur} className="flex items-center gap-2 py-1 cursor-pointer text-sm">
+                    <input type="checkbox" name={nom} value={o.valeur} checked={coches.has(o.valeur)} onChange={() => basculer(o.valeur)} className="w-4 h-4 accent-violet" />
+                    {o.libelle}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-nuit/10 px-3 py-2 text-xs text-nuit/60">
+        <span>{coches.size} sélectionné{coches.size > 1 ? 's' : ''}</span>
+        {filtre && (masques > 0 || tous) && (
+          <button type="button" onClick={() => setTous((t) => !t)} className="text-roi hover:underline">
+            {tous ? "Seulement l'équipe du match" : `Afficher les autres équipes (${masques})`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const input = 'w-full bg-white border border-nuit/15 focus:border-violet focus:ring-2 focus:ring-violet/20 outline-none px-3 py-2.5';
 
@@ -16,6 +73,11 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
   action: (prev: EtatFormulaire, fd: FormData) => Promise<EtatFormulaire>;
 }) {
   const [etat, soumettre, enCours] = useActionState(action, {});
+  // Valeurs suivies des champs dont dépend un autre champ (ex. le match choisi filtre les joueurs)
+  const pilotes = champs.map((c) => c.dependDe).filter((x): x is string => !!x);
+  const [suivies, setSuivies] = useState<Record<string, string>>(() =>
+    Object.fromEntries(pilotes.map((p) => [p, String((etat.valeurs ?? valeurs)[p] ?? '')])),
+  );
 
   return (
     <form action={soumettre} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
@@ -34,26 +96,27 @@ export default function FormulaireRessource({ champs, valeurs, options, action }
           );
         } else if (c.type === 'relations') {
           const coches = Array.isArray(v) ? v : [];
-          controle = (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 border border-nuit/15 bg-white p-3 max-h-60 overflow-y-auto">
-              {(options[c.nom] ?? []).map((o) => (
-                <label key={o.valeur} className="flex items-center gap-2 py-1 cursor-pointer text-sm">
-                  <input type="checkbox" name={c.nom} value={o.valeur} defaultChecked={coches.includes(o.valeur)} className="w-4 h-4 accent-violet" />
-                  {o.libelle}
-                </label>
-              ))}
-            </div>
-          );
+          const filtre = c.dependDe ? (options[c.dependDe] ?? []).find((o) => o.valeur === suivies[c.dependDe!])?.filtre : undefined;
+          // La clé remonte le composant si le formulaire revient en erreur avec d'autres cases cochées
+          controle = <CasesMultiples key={coches.join(',')} nom={c.nom} options={options[c.nom] ?? []} coches={coches} filtre={filtre} />;
         } else if (c.type === 'image') {
           controle = <ChampImage nom={c.nom} valeur={String(v ?? '')} />;
+        } else if (c.type === 'fichier') {
+          controle = <ChampFichier nom={c.nom} valeur={String(v ?? '')} requis={c.requis} />;
         } else if (c.type === 'textarea') {
           controle = <textarea {...commun} defaultValue={String(v ?? '')} rows={8} className={input} />;
         } else if (c.type === 'relation' || c.type === 'select' || c.type === 'select-int') {
-          const opts = c.type === 'relation' ? options[c.nom] ?? [] : (c.options ?? []).map(([valeur, libelle]) => ({ valeur, libelle }));
+          const opts: Option[] = c.type === 'relation' ? options[c.nom] ?? [] : (c.options ?? []).map(([valeur, libelle]) => ({ valeur, libelle }));
+          const groupes = grouper(opts);
+          const suivi = pilotes.includes(c.nom);
           controle = (
-            <select {...commun} defaultValue={String(v ?? '')} className={input}>
+            <select {...commun} defaultValue={String(v ?? '')} className={input}
+              onChange={suivi ? (e) => { const val = e.target.value; setSuivies((s) => ({ ...s, [c.nom]: val })); } : undefined}>
               <option value="">— Choisir —</option>
-              {opts.map((o) => <option key={o.valeur} value={o.valeur}>{o.libelle}</option>)}
+              {groupes.map(([g, liste]) => {
+                const items = liste.map((o) => <option key={o.valeur} value={o.valeur}>{o.libelle}</option>);
+                return g ? <optgroup key={g} label={g}>{items}</optgroup> : <Fragment key="">{items}</Fragment>;
+              })}
             </select>
           );
         } else {

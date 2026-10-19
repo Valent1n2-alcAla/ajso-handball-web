@@ -49,9 +49,18 @@ export async function apiAdmin(path: string, init: RequestInit = {}): Promise<Re
   return res;
 }
 
+/** Liste complète (pages de 200 enchaînées, 2 000 éléments au plus). */
 export async function listeAdmin<T>(path: string): Promise<T[]> {
   const sep = path.includes('?') ? '&' : '?';
-  const res = await apiAdmin(`${path}${sep}itemsPerPage=200`);
-  if (!res.ok) return [];
-  return membres<T>(await res.json().catch(() => null));
+  const page = async (n: number) => {
+    const res = await apiAdmin(`${path}${sep}itemsPerPage=200${n > 1 ? `&page=${n}` : ''}`);
+    return res.ok ? await res.json().catch(() => null) : null;
+  };
+  const premiere = await page(1);
+  const items = membres<T>(premiere);
+  const total: number = premiere?.totalItems ?? premiere?.['hydra:totalItems'] ?? items.length;
+  const pages = Math.min(Math.ceil(total / 200), 10);
+  if (pages <= 1) return items;
+  const suite = await Promise.all(Array.from({ length: pages - 1 }, (_, i) => page(i + 2)));
+  return [...items, ...suite.flatMap((d) => membres<T>(d))];
 }

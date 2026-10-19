@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { supprimer } from '../../actions';
 import BoutonConfirmer from '@/components/admin/BoutonConfirmer';
 import { listeAdmin } from '@/lib/auth';
-import { formatDateCourte, JOURS } from '@/lib/format';
+import { formatDateCourte, formatHeure, JOURS } from '@/lib/format';
 import type { Colonne } from '@/lib/admin-ressources';
 import { ressourceOu404 } from './commun';
 
@@ -17,6 +17,8 @@ function cellule(item: Item, c: Colonne) {
   if (c.type === 'bool') return v ? '✓' : '—';
   if (c.type === 'jour') return JOURS[Number(v)] ?? '';
   if (c.type === 'date') return v ? formatDateCourte(String(v)) + ' ' + String(v).slice(0, 4) : '';
+  if (c.type === 'datetime') return v ? `${formatDateCourte(String(v))} · ${formatHeure(String(v).slice(11, 16))}` : '';
+  if (c.options && typeof v === 'string') return c.options[v] ?? v;
   if (c.type === 'score') return item.scoreDom == null ? <span className="text-nuit/40">à jouer</span> : `${item.scoreDom} – ${item.scoreExt}`;
   return v == null ? '' : String(v);
 }

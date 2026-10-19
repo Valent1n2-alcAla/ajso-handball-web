@@ -3,7 +3,7 @@ import { JOURS } from './format';
 export type Champ = {
   nom: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'relations' | 'image';
+  type: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'datetime-local' | 'url' | 'email' | 'checkbox' | 'select' | 'select-int' | 'relation' | 'relations' | 'image' | 'fichier';
   requis?: boolean;
   aide?: string;
   options?: [string, string][];
@@ -14,9 +14,15 @@ export type Champ = {
   pas?: number;
   /** Valeur par défaut d'une case à cocher à la création */
   defaut?: boolean;
+  /** Valeur initiale d'un autre champ à la création */
+  valeurDefaut?: string;
+  /** Libellés et regroupements spécifiques des choix (matchs datés, joueurs par équipe) */
+  choix?: 'rencontres' | 'joueurs';
+  /** Choix filtrés selon la valeur d'un autre champ (ex. joueurs de l'équipe du match choisi) */
+  dependDe?: string;
 };
 
-export type Colonne = { chemin: string; label: string; type?: 'bool' | 'jour' | 'score' | 'date' };
+export type Colonne = { chemin: string; label: string; type?: 'bool' | 'jour' | 'score' | 'date' | 'datetime'; options?: Record<string, string> };
 
 export type Ressource = {
   endpoint: string;
@@ -156,6 +162,7 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'prix', label: 'Prix (€)', type: 'number', requis: true },
       { nom: 'ordre', label: "Ordre d'affichage", type: 'number' },
       { nom: 'details', label: 'Détails', type: 'text', large: true },
+      { nom: 'helloassoUrl', label: 'Paiement en ligne (HelloAsso)', type: 'url', large: true, aide: 'Lien https de la billetterie / adhésion HelloAsso de ce tarif. Un bouton « Payer en ligne » s\'affiche sur la page Inscriptions.' },
     ],
   },
   categories: {
@@ -208,6 +215,7 @@ export const RESSOURCES: Record<string, Ressource> = {
       { nom: 'facebook', label: 'Page Facebook (URL)', type: 'url' },
       { nom: 'instagram', label: 'Compte Instagram (URL)', type: 'url' },
       { nom: 'boutiqueUrl', label: 'Boutique en ligne (HelloAsso…)', type: 'url' },
+      { nom: 'helloassoUrl', label: 'Page HelloAsso du club (adhésions)', type: 'url', aide: 'Lien https ; bouton « Adhérer en ligne » sur la page Inscriptions.' },
       { nom: 'presentation', label: 'Présentation', type: 'textarea', large: true },
     ],
   },
@@ -320,11 +328,65 @@ Object.assign(RESSOURCES, {
       { nom: 'description', label: 'Description', type: 'textarea', large: true },
     ],
   },
+  convocations: {
+    endpoint: '/api/convocations',
+    titre: 'Convocations',
+    singulier: 'convocation',
+    colonnes: [
+      { chemin: 'rencontre.date', label: 'Match', type: 'date' },
+      { chemin: 'rencontre.equipe.nom', label: 'Équipe' },
+      { chemin: 'rencontre.equipeAdverse.nom', label: 'Adversaire' },
+      { chemin: 'rendezVous', label: 'Rendez-vous', type: 'datetime' },
+      { chemin: 'publiee', label: 'Publiée', type: 'bool' },
+    ],
+    champs: [
+      { nom: 'rencontre', label: 'Match', type: 'relation', choix: 'rencontres', source: '/api/rencontres', requis: true, large: true, aide: 'Matchs à venir en premier.' },
+      { nom: 'rendezVous', label: 'Rendez-vous (date et heure)', type: 'datetime-local', requis: true },
+      { nom: 'lieuRendezVous', label: 'Lieu du rendez-vous', type: 'text', aide: 'Ex. parking du gymnase, départ en minibus…' },
+      { nom: 'joueurs', label: 'Joueurs convoqués', type: 'relations', choix: 'joueurs', source: '/api/admin/joueurs', dependDe: 'rencontre', large: true, aide: '30 au maximum. Publiés sous leur nom affiché (« Léa M. » chez les jeunes).' },
+      { nom: 'message', label: 'Message aux joueurs et parents', type: 'textarea', large: true, aide: 'Tenue, covoiturage, goûter… (2 000 caractères max.)' },
+      { nom: 'publiee', label: 'Publiée sur la page de l\'équipe (décocher pour un brouillon)', type: 'checkbox', defaut: false },
+    ],
+  },
+  permanences: {
+    endpoint: '/api/permanences',
+    titre: 'Permanences',
+    singulier: 'permanence',
+    colonnes: [
+      { chemin: 'rencontre.date', label: 'Match', type: 'date' },
+      { chemin: 'rencontre.equipe.nom', label: 'Équipe' },
+      { chemin: 'role', label: 'Rôle', options: { arbitrage: 'Arbitrage', table: 'Table de marque', buvette: 'Buvette', accueil: 'Accueil', autre: 'Autre' } },
+      { chemin: 'benevole', label: 'Bénévole(s)' },
+      { chemin: 'besoin', label: 'Besoin' },
+    ],
+    champs: [
+      { nom: 'rencontre', label: 'Match à domicile', type: 'relation', choix: 'rencontres', source: '/api/rencontres?domicile=true', requis: true, large: true },
+      { nom: 'role', label: 'Rôle', type: 'select', requis: true, options: [['arbitrage', 'Arbitrage'], ['table', 'Table de marque'], ['buvette', 'Buvette'], ['accueil', 'Accueil'], ['autre', 'Autre']] },
+      { nom: 'besoin', label: 'Personnes nécessaires', type: 'number', requis: true, valeurDefaut: '1', aide: 'De 1 à 20.' },
+      { nom: 'benevole', label: 'Bénévole(s) inscrit(s)', type: 'text', large: true, aide: 'Vide = poste à pourvoir. Plusieurs noms : séparez-les par des virgules (80 caractères max.).' },
+    ],
+  },
+  documents: {
+    endpoint: '/api/documents',
+    titre: 'Documents',
+    singulier: 'document',
+    colonnes: [
+      { chemin: 'titre', label: 'Titre' },
+      { chemin: 'categorie', label: 'Catégorie', options: { inscription: 'Inscription', reglement: 'Règlement', assemblee: 'Assemblée générale', autre: 'Autre' } },
+      { chemin: 'ordre', label: 'Ordre' },
+    ],
+    champs: [
+      { nom: 'titre', label: 'Titre', type: 'text', requis: true, large: true },
+      { nom: 'categorie', label: 'Catégorie', type: 'select', requis: true, valeurDefaut: 'inscription', options: [['inscription', 'Inscription'], ['reglement', 'Règlement'], ['assemblee', 'Assemblée générale'], ['autre', 'Autre']] },
+      { nom: 'ordre', label: "Ordre d'affichage", type: 'number', valeurDefaut: '0' },
+      { nom: 'url', label: 'Fichier', type: 'fichier', requis: true, large: true, aide: 'PDF ou image, 10 Mo maximum. Publié sur la page Inscriptions.' },
+    ],
+  },
 } satisfies Record<string, Ressource>);
 
 export const MENU_ADMIN: { titre: string; cles: string[] }[] = [
-  { titre: 'Saison', cles: ['rencontres', 'classements', 'actualites', 'equipes', 'joueurs', 'creneaux'] },
-  { titre: 'Vie du club', cles: ['evenements', 'albums', 'produits'] },
-  { titre: 'Club', cles: ['club', 'partenaires', 'tarifs', 'gymnases'] },
+  { titre: 'Saison', cles: ['rencontres', 'convocations', 'classements', 'actualites', 'equipes', 'joueurs', 'creneaux'] },
+  { titre: 'Vie du club', cles: ['permanences', 'evenements', 'albums', 'produits'] },
+  { titre: 'Club', cles: ['club', 'partenaires', 'tarifs', 'documents', 'gymnases'] },
   { titre: 'Référentiels', cles: ['categories', 'championnats', 'tranches'] },
 ];
