@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Logo from '@/components/Logo';
 import { BoutonLien, PageHero, Section } from '@/components/ui';
-import { getClub, getEquipesClub, getGymnases } from '@/lib/api';
+import ListeDocuments from '@/components/Documents';
+import { getClub, getDocuments, getEquipesClub, getGymnases } from '@/lib/api';
 
 export const metadata: Metadata = { title: 'Le club', description: "Histoire, valeurs, dirigeants et gymnases de l'AJS Ouistreham Handball." };
 
@@ -12,7 +13,9 @@ const VALEURS = [
 ];
 
 export default async function ClubPage() {
-  const [club, gymnases, equipes] = await Promise.all([getClub(), getGymnases(), getEquipesClub()]);
+  const [club, gymnases, equipes, documents] = await Promise.all([getClub(), getGymnases(), getEquipesClub(), getDocuments()]);
+  // Statuts, règlements, comptes rendus d'AG… (les pièces d'inscription sont sur la page Inscriptions)
+  const documentsClub = documents.filter((d) => d.categorie !== 'inscription');
 
   return (
     <>
@@ -77,10 +80,16 @@ export default async function ClubPage() {
           <div className="bg-losange text-white p-7 flex flex-col justify-between gap-4">
             <p className="font-display text-2xl uppercase">Envie de vous investir ?</p>
             <p className="text-white/80 text-sm">Le club recherche toujours des bénévoles : arbitrage, table de marque, buvette, encadrement…</p>
-            <div><BoutonLien href="/contact">Nous écrire</BoutonLien></div>
+            <div><BoutonLien href="/benevoles">Voir les besoins</BoutonLien></div>
           </div>
         </div>
       </Section>
+
+      {documentsClub.length > 0 && (
+        <Section surtitre="Vie associative" titre="Documents" className="pt-0 md:pt-0">
+          <ListeDocuments documents={documentsClub} />
+        </Section>
+      )}
 
       <section className="bg-papier">
         <Section surtitre="Où nous trouver" titre="Nos gymnases">
