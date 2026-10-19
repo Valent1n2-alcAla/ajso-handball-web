@@ -28,7 +28,7 @@ export default async function Accueil() {
         <div aria-hidden className="absolute right-[6%] top-20 w-5 h-5 rotate-45 bg-jaune hidden lg:block" />
         <div aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-nuit to-transparent" />
 
-        <div className="relative max-w-[1400px] mx-auto px-4 md:px-10 pt-14 pb-40 md:pt-24 md:pb-52 grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] items-center gap-10">
+        <div className="relative max-w-[1400px] mx-auto px-4 md:px-10 pt-14 pb-44 md:pt-24 md:pb-60 grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] items-center gap-10">
           <div className="animate-apparition">
             <Surtitre className="text-jaune mb-6">AJS Ouistreham Handball</Surtitre>
             <h1 className="font-display text-[19vw] sm:text-[15vw] lg:text-[8.2rem] xl:text-[9.5rem] leading-[0.86] uppercase">

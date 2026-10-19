@@ -21,7 +21,8 @@ async function getJson<T>(path: string): Promise<T | null> {
       next: { revalidate: REVALIDATE, tags: ['api'] },
     });
     if (!res.ok) {
-      console.error(`API ${res.status} sur ${path}`);
+      // 404 attendu (fiche inexistante → page 404 du site) : pas une erreur à signaler
+      if (res.status !== 404) console.error(`API ${res.status} sur ${path}`);
       return null;
     }
     return (await res.json()) as T;
