@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { Anton, Barlow, IBM_Plex_Mono } from 'next/font/google';
+import { Open_Sans, Oswald } from 'next/font/google';
 import './globals.css';
 
-const anton = Anton({ subsets: ['latin'], weight: ['400'], variable: '--font-anton' });
-const barlow = Barlow({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-barlow' });
-const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-plex-mono' });
+const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald' });
+const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-open-sans' });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning className={`${anton.variable} ${barlow.variable} ${plexMono.variable} h-full antialiased`}>
+    <html lang="fr" data-scroll-behavior="smooth" suppressHydrationWarning className={`${oswald.variable} ${openSans.variable} h-full antialiased`}>
       {/* suppressHydrationWarning : attributs ajoutés par certaines extensions du navigateur (Grammarly, ColorZilla…) */}
       <body className="min-h-full flex flex-col font-body" suppressHydrationWarning>{children}</body>
     </html>

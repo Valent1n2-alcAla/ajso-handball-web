@@ -1,10 +1,11 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getClub, getPartenaires } from '@/lib/api';
-import { LOGO_SRC } from '@/lib/site';
+import { getClub, getEquipesClub, getPartenaires } from '@/lib/api';
+import { construireNav, LOGO_SRC, reseauxClub } from '@/lib/site';
 
 export default async function SiteLayout({ children }: LayoutProps<'/'>) {
-  const [club, partenaires] = await Promise.all([getClub(), getPartenaires()]);
+  const [club, partenaires, equipes] = await Promise.all([getClub(), getPartenaires(), getEquipesClub()]);
+  const reseaux = reseauxClub(club);
   const base = process.env.SITE_URL ?? 'http://localhost:3000';
   // Données structurées du club (moteurs de recherche)
   const jsonLd = {
@@ -18,7 +19,7 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
     ...(club?.adresse ? { address: club.adresse } : {}),
     ...(club?.email ? { email: club.email } : {}),
     ...(club?.telephone ? { telephone: club.telephone } : {}),
-    ...([club?.facebook, club?.instagram].some(Boolean) ? { sameAs: [club?.facebook, club?.instagram].filter(Boolean) } : {}),
+    ...(reseaux.length ? { sameAs: reseaux.map((r) => r.href) } : {}),
   };
   return (
     <>
@@ -26,9 +27,9 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
         Aller au contenu
       </a>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
-      <Header />
-      <main id="contenu" tabIndex={-1} className="flex-1 overflow-x-hidden outline-none">{children}</main>
-      <Footer club={club} partenaires={partenaires} />
+      <Header rubriques={construireNav(equipes)} reseaux={reseaux} partenaires={partenaires} email={club?.email} />
+      <main id="contenu" tabIndex={-1} className="flex-1 overflow-x-clip outline-none">{children}</main>
+      <Footer club={club} partenaires={partenaires} reseaux={reseaux} />
     </>
   );
 }

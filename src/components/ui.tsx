@@ -1,111 +1,114 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-/** Petit losange décoratif (puce de titre, séparateur). */
-export function Losange({ className = 'w-3 h-3 bg-jaune' }: { className?: string }) {
-  return <span aria-hidden className={`inline-block shrink-0 rotate-45 ${className}`} />;
-}
+/** Largeur du contenu du site (conteneur centré). */
+export const CONTENEUR = 'max-w-[1170px] mx-auto px-4 md:px-6';
 
-/** Surtitre en capitales mono, précédé d'un trait. */
-export function Surtitre({ children, className = 'text-jaune' }: { children: ReactNode; className?: string }) {
+/** Chevron « > » (listes, boutons, liens). */
+export function Chevron({ className = 'w-2.5 h-2.5', sens = 'droite' }: { className?: string; sens?: 'droite' | 'gauche' | 'haut' | 'bas' }) {
+  const rotation = { droite: '', gauche: 'rotate-180', haut: '-rotate-90', bas: 'rotate-90' }[sens];
   return (
-    <p className={`flex items-center gap-3 font-mono text-[11px] md:text-xs tracking-[0.3em] uppercase ${className}`}>
-      <span aria-hidden className="w-8 h-0.5 bg-current" />
-      {children}
-    </p>
+    <svg aria-hidden viewBox="0 0 8 12" className={`shrink-0 ${rotation} ${className}`} fill="none" stroke="currentColor" strokeWidth="2.4">
+      <path d="M1.5 1.5L6 6l-4.5 4.5" />
+    </svg>
   );
 }
 
-export function PageHero({ surtitre, titre, children }: { surtitre: string; titre: ReactNode; children?: ReactNode }) {
+/** Titre de page (en haut à gauche, capitales condensées bleu nuit) et chapô éventuel. */
+export function TitrePage({ titre, children, retour }: { titre: ReactNode; children?: ReactNode; retour?: { href: string; label: string } }) {
   return (
-    <section className="relative bg-nuit text-white overflow-hidden motif-losanges clip-diagonale">
-      <div aria-hidden className="absolute -right-40 -top-40 md:-right-24 md:-top-48 w-[420px] md:w-[620px] aspect-square rotate-45 bg-losange opacity-50" />
-      <div aria-hidden className="absolute right-24 -bottom-20 w-40 aspect-square rotate-45 border-2 border-glacier/25 hidden md:block" />
-      <div aria-hidden className="absolute right-[22rem] top-16 w-5 aspect-square rotate-45 bg-jaune hidden lg:block" />
-      <div className="relative max-w-[1400px] mx-auto px-4 md:px-10 pt-14 pb-24 md:pt-24 md:pb-32 animate-apparition">
-        <Surtitre className="text-jaune mb-6">{surtitre}</Surtitre>
-        <h1 className="font-display text-[3.25rem] sm:text-7xl md:text-8xl uppercase leading-[1.03] pt-2 break-words">{titre}</h1>
-        {children && <div className="mt-6 max-w-2xl text-white/75 text-lg">{children}</div>}
-      </div>
-    </section>
-  );
-}
-
-/** En-tête de section homogène : surtitre, grand titre, lien d'action. */
-export function EnTete({ surtitre, titre, action, sombre = false, as: Titre = 'h2' }: {
-  surtitre?: string; titre: ReactNode; action?: { href: string; label: string }; sombre?: boolean; as?: 'h2' | 'h3';
-}) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 mb-10 md:mb-12">
-      <div>
-        {surtitre && <Surtitre className={`mb-4 ${sombre ? 'text-jaune' : 'text-violet'}`}>{surtitre}</Surtitre>}
-        <Titre className="font-display text-[2.6rem] md:text-6xl uppercase leading-[1.02] pt-1">{titre}</Titre>
-      </div>
-      {action && <LienFleche href={action.href} sombre={sombre}>{action.label}</LienFleche>}
+    <div className={`${CONTENEUR} pt-7 md:pt-9`}>
+      {retour && (
+        <Link href={retour.href} className="inline-flex items-center gap-1.5 text-sm text-bande-fonce hover:underline mb-3">
+          <Chevron sens="gauche" className="w-2 h-2.5" />{retour.label}
+        </Link>
+      )}
+      <h1 className="font-display text-[2rem] md:text-[2.4rem] uppercase leading-[1.1] text-nuit break-words">{titre}</h1>
+      {children && <div className="mt-3 max-w-3xl text-[15px] leading-relaxed text-encre/85">{children}</div>}
     </div>
   );
 }
 
-/** Lien texte avec flèche animée au survol. */
+/** Titre de section : capitales condensées couleur club, bouton « Voir tout » à droite. */
+export function EnTete({ titre, action, as: Titre = 'h2', sombre = false, className = '' }: {
+  titre: ReactNode; action?: { href: string; label: string }; as?: 'h2' | 'h3'; sombre?: boolean; className?: string;
+}) {
+  return (
+    <div className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mb-5 ${className}`}>
+      <Titre className={`font-display text-[1.75rem] md:text-[2.1rem] uppercase leading-tight ${sombre ? 'text-white' : 'text-bande'}`}>{titre}</Titre>
+      {action && <BoutonLien href={action.href} taille="sm">{action.label}<Chevron className="w-2 h-2.5" /></BoutonLien>}
+    </div>
+  );
+}
+
+/** Lien texte suivi d'un chevron. */
 export function LienFleche({ href, children, sombre = false }: { href: string; children: ReactNode; sombre?: boolean }) {
   return (
-    <Link
-      href={href}
-      className={`group inline-flex items-center gap-2 font-display uppercase tracking-wide text-base md:text-lg transition-colors ${sombre ? 'text-jaune hover:text-white' : 'text-roi hover:text-violet'}`}
-    >
+    <Link href={href} className={`inline-flex items-center gap-2 font-display uppercase tracking-wide hover:underline ${sombre ? 'text-white' : 'text-bande-fonce'}`}>
       {children}
-      <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+      <Chevron className="w-2 h-2.5" />
     </Link>
   );
 }
 
-export function Section({ id, titre, surtitre, action, children, className = '', sombre = false }: {
-  id?: string; titre?: ReactNode; surtitre?: string; action?: { href: string; label: string }; children: ReactNode; className?: string; sombre?: boolean;
+export function Section({ id, titre, action, children, className = '', sombre = false }: {
+  id?: string; titre?: ReactNode; action?: { href: string; label: string }; children: ReactNode; className?: string; sombre?: boolean;
 }) {
   return (
-    <section id={id} className={`max-w-[1400px] mx-auto px-4 md:px-10 py-16 md:py-24 ${className}`}>
-      {titre && <EnTete surtitre={surtitre} titre={titre} action={action} sombre={sombre} />}
+    <section id={id} className={`${CONTENEUR} py-8 md:py-10 ${className}`}>
+      {titre && <EnTete titre={titre} action={action} sombre={sombre} />}
       {children}
     </section>
   );
 }
 
-/** État vide soigné : losange, message, action éventuelle. */
+/** État vide : simple encadré gris. */
 export function Vide({ children, titre, action, sombre = false }: {
   children: ReactNode; titre?: string; action?: { href: string; label: string }; sombre?: boolean;
 }) {
   return (
-    <div className={`relative overflow-hidden px-6 py-12 md:py-16 text-center ${sombre ? 'bg-white/[0.04] border border-white/10 text-white/70' : 'bg-papier text-nuit/65'}`}>
-      <div aria-hidden className="relative mx-auto mb-6 w-14 h-14">
-        <span className={`absolute inset-0 rotate-45 ${sombre ? 'border-2 border-white/20' : 'border-2 border-nuit/10'}`} />
-        <span className="absolute inset-3 rotate-45 bg-losange" />
-      </div>
-      {titre && <p className={`font-display text-2xl uppercase mb-2 ${sombre ? 'text-white' : 'text-nuit'}`}>{titre}</p>}
+    <div className={`px-5 py-8 text-center ${sombre ? 'border border-white/20 text-white/80' : 'bg-papier border border-filet text-encre/80'}`}>
+      {titre && <p className={`font-display text-xl uppercase mb-1 ${sombre ? 'text-white' : 'text-nuit'}`}>{titre}</p>}
       <div className="max-w-md mx-auto">{children}</div>
-      {action && <div className="mt-6"><LienFleche href={action.href} sombre={sombre}>{action.label}</LienFleche></div>}
+      {action && <div className="mt-4"><LienFleche href={action.href} sombre={sombre}>{action.label}</LienFleche></div>}
     </div>
   );
 }
 
-export function Badge({ children, ton = 'roi' }: { children: ReactNode; ton?: 'roi' | 'violet' | 'jaune' | 'gris' }) {
+/** Petite étiquette (catégorie, type). */
+export function Badge({ children, ton = 'bande' }: { children: ReactNode; ton?: 'bande' | 'jaune' | 'gris' | 'nuit' }) {
   const tons = {
-    roi: 'bg-roi/10 text-roi',
-    violet: 'bg-violet/10 text-violet',
+    bande: 'bg-bande text-white',
     jaune: 'bg-jaune text-nuit',
-    gris: 'bg-nuit/5 text-nuit/70',
+    gris: 'bg-papier text-encre/80 border border-filet',
+    nuit: 'bg-nuit text-white',
   };
-  return <span className={`inline-block font-mono text-[11px] uppercase tracking-widest px-2.5 py-1 ${tons[ton]}`}>{children}</span>;
+  return <span className={`inline-block font-display text-[13px] uppercase tracking-wide px-2 py-0.5 ${tons[ton]}`}>{children}</span>;
 }
 
-export function BoutonLien({ href, children, variante = 'jaune' }: { href: string; children: ReactNode; variante?: 'jaune' | 'contour' | 'nuit' }) {
-  const v = {
-    jaune: 'bg-jaune text-nuit hover:bg-white shadow-[0_10px_30px_-10px_rgba(255,198,41,0.6)]',
-    contour: 'border-2 border-white/40 text-white hover:border-jaune hover:text-jaune',
-    nuit: 'bg-nuit text-white hover:bg-roi',
-  };
+const VARIANTES = {
+  bande: 'bg-bande text-white hover:bg-bande-fonce',
+  nuit: 'bg-nuit text-white hover:bg-bande-fonce',
+  jaune: 'bg-jaune text-nuit hover:bg-white',
+  contour: 'border-2 border-white text-white hover:bg-white hover:text-nuit',
+} as const;
+
+/** Bouton plein, angles droits, capitales condensées. */
+export function BoutonLien({ href, children, variante = 'bande', taille = 'md', externe = false }: {
+  href: string; children: ReactNode; variante?: keyof typeof VARIANTES; taille?: 'sm' | 'md'; externe?: boolean;
+}) {
+  const cls = `inline-flex items-center justify-center gap-2.5 font-display uppercase tracking-wide transition-colors ${taille === 'sm' ? 'text-[15px] px-3.5 py-1.5' : 'text-lg px-6 py-2.5'} ${VARIANTES[variante]}`;
+  return externe
+    ? <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{children}</a>
+    : <Link href={href} className={cls}>{children}</Link>;
+}
+
+/** Bloc titré sobre (encadré à filet) pour les colonnes latérales. */
+export function Encadre({ titre, children, className = '' }: { titre: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <Link href={href} className={`inline-flex items-center justify-center font-display uppercase tracking-wider text-lg px-7 py-3.5 transition duration-200 hover:-translate-y-0.5 ${v[variante]}`}>
-      {children}
-    </Link>
+    <div className={`border border-filet ${className}`}>
+      <h2 className="bg-bande text-white font-display uppercase tracking-wide text-lg px-4 py-2">{titre}</h2>
+      <div className="p-4">{children}</div>
+    </div>
   );
 }
