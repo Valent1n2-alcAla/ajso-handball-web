@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 import Effectif from '@/components/Effectif';
 import StatsJoueurs from '@/components/StatsJoueurs';
 import Forme from '@/components/Forme';
 import { CarteMatch, LigneMatch } from '@/components/Match';
 import TableClassement from '@/components/TableClassement';
-import { Badge, BoutonLien, EnTete, Surtitre, Vide } from '@/components/ui';
+import { BoutonLien, Chevron, CONTENEUR, TitrePage, Vide } from '@/components/ui';
 import Logo from '@/components/Logo';
-import { styleCategorie } from '@/lib/categories';
 import CarteConvocation from '@/components/Convocation';
 import SelecteurSaison from '@/components/SelecteurSaison';
 import { getClassement, getConvocationsAVenir, getCreneaux, getDatePremierMatch, getEquipe, getJoueurs, getParticipations, getProchainsMatchs, getResultatsSaison } from '@/lib/api';
@@ -27,7 +26,23 @@ export async function generateMetadata({ params }: PageProps<'/equipes/[id]'>): 
   };
 }
 
-const ANCRES = [['convocations', 'Convocations'], ['effectif', 'Effectif'], ['stats', 'Stats'], ['matchs', 'Matchs'], ['classement', 'Classement'], ['entrainements', 'Entraînements']] as const;
+const ANCRES = [
+  ['presentation', 'Présentation'], ['convocations', 'Convocations'], ['effectif', 'Effectif et staff'], ['stats', 'Statistiques'],
+  ['calendrier', 'Calendrier / Résultats'], ['classement', 'Classement'], ['entrainements', 'Entraînements'],
+] as const;
+
+/** Section de la fiche équipe (ancre du méga-menu). */
+function Bloc({ id, titre, action, children }: { id: string; titre: ReactNode; action?: ReactNode; children: ReactNode }) {
+  return (
+    <section id={id} className={`${CONTENEUR} pt-10 scroll-mt-16`}>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mb-5 border-b-2 border-bande pb-2">
+        <h2 className="font-display text-[1.75rem] md:text-[2rem] uppercase leading-tight text-bande">{titre}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default async function EquipePage({ params, searchParams }: PageProps<'/equipes/[id]'>) {
   const { id } = await params;
@@ -60,225 +75,173 @@ export default async function EquipePage({ params, searchParams }: PageProps<'/e
   const matchsSaisis = new Set(participations.map((p) => p.rencontre)).size;
   const nous = classement.find((l) => l.estAjso);
   const diff = b.butsPour - b.butsContre;
-  const presentes = new Set([
-    convocations.length ? 'convocations' : '',
-    joueurs.length || equipe.entraineur ? 'effectif' : '',
-    stats.length ? 'stats' : '',
-    'matchs',
-    classement.length ? 'classement' : '',
-    creneaux.length ? 'entrainements' : '',
-  ]);
+  const presentes = new Set<string>(['presentation', 'effectif', 'calendrier', 'classement', convocations.length ? 'convocations' : '', stats.length ? 'stats' : '', creneaux.length ? 'entrainements' : '']);
+
+  const fiche: [string, ReactNode][] = [
+    ['Catégorie', equipe.categorie?.nom],
+    ['Compétition', competitions.length ? competitions.map((c) => <span key={c.id} className="block">{nomCompetition(c)}</span>) : 'Pratique sans championnat'],
+    ['Niveau', equipe.championnat?.niveau],
+    ['Entraîneur', equipe.entraineur],
+    ['Entente', equipe.entente ? `Avec ${equipe.entente}` : null],
+    ['Classement', nous ? <>{nous.position}<sup>{nous.position === 1 ? 'er' : 'e'}</sup> sur {classement.length} · {nous.points} pts</> : null],
+  ];
 
   return (
     <>
-      {/* ===== HERO ===== */}
-      <section className="relative bg-nuit text-white overflow-hidden motif-losanges" style={styleCategorie(equipe)}>
-        {equipe.photo ? (
-          <>
-            <ImageContenu src={equipe.photo} alt="" fill preload sizes="100vw" className="object-cover" />
-            <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-nuit via-nuit/80 to-nuit/20" />
-          </>
-        ) : (
-          <>
-            <span aria-hidden className="absolute -right-40 md:-right-24 top-1/2 -translate-y-1/2 w-[420px] md:w-[620px] aspect-square rotate-45 bg-losange opacity-60" />
-            <span aria-hidden className="absolute right-[18%] top-16 w-16 aspect-square rotate-45 bg-(--cat) opacity-90 hidden md:block" />
-          </>
-        )}
-        <span aria-hidden className="absolute top-0 inset-x-0 h-1.5 bg-(--cat) z-10" />
-        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-nuit to-transparent" />
-
-        <div className="relative max-w-[1400px] mx-auto px-4 md:px-10 pt-12 md:pt-20 pb-10 animate-apparition">
-          <Link href="/equipes" className="group inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">
-            <span aria-hidden className="transition-transform group-hover:-translate-x-1">←</span> Toutes les équipes
-          </Link>
-          <Surtitre className="text-jaune mt-8 mb-6">{[equipe.categorie?.tranche?.nom, equipe.categorie?.nom].filter(Boolean).join(' · ') || 'Équipe'}</Surtitre>
-          <h1 className="font-display text-[3.6rem] sm:text-7xl md:text-[8rem] lg:text-[9rem] uppercase leading-[1] pt-3 break-words">{equipe.nom}</h1>
-          <div className="flex flex-wrap items-center gap-3 mt-6">
-            {competitions.map((c) => <Badge key={c.id} ton="jaune">{nomCompetition(c)}</Badge>)}
-            {equipe.championnat && <span className="font-mono text-xs uppercase tracking-widest text-white/60">{equipe.championnat.niveau}</span>}
-            {equipe.entente && <span className="font-mono text-xs uppercase tracking-widest border border-glacier/40 text-glacier px-2.5 py-1">Entente avec {equipe.entente}</span>}
-            {nous && (
-              <span className="font-display text-xl uppercase bg-white/10 px-3 py-1">
-                {nous.position}<sup className="text-xs">{nous.position === 1 ? 'er' : 'e'}</sup> / {classement.length}
-              </span>
-            )}
-          </div>
-          {equipe.description && <p className="mt-6 max-w-2xl text-white/75 text-lg">{equipe.description}</p>}
-
-          {/* Bandeau stats */}
-          {archive && <p className="mt-10 -mb-8 font-mono text-[11px] uppercase tracking-widest text-jaune">Bilan · {libelle}</p>}
-          {b.joues > 0 && (
-            <dl className="mt-12 grid grid-cols-3 md:grid-cols-6 border-t border-white/15">
-              {[
-                ['Matchs', b.joues, ''],
-                ['Victoires', b.victoires, 'text-victoire-clair'],
-                ['Nuls', b.nuls, 'text-jaune'],
-                ['Défaites', b.defaites, 'text-defaite-clair'],
-                ['Diff. buts', `${diff > 0 ? '+' : ''}${diff}`, ''],
-              ].map(([l, v, c]) => (
-                <div key={l as string} className="py-4 md:py-5 pr-4">
-                  <dt className="font-mono text-[10px] uppercase tracking-widest text-white/65">{l}</dt>
-                  <dd className={`font-display text-4xl md:text-5xl leading-none mt-1 ${c}`}>{v}</dd>
-                </div>
-              ))}
-              <div className="py-5 col-span-3 md:col-span-1">
-                <dt className="font-mono text-[10px] uppercase tracking-widest text-white/65 mb-2">Forme</dt>
-                <dd><Forme forme={b.forme} /></dd>
-              </div>
-            </dl>
-          )}
-        </div>
-      </section>
+      <TitrePage titre={equipe.nom} retour={{ href: '/equipes', label: 'Toutes les équipes' }} />
 
       {/* Navigation interne */}
-      <nav className="sticky top-20 z-40 bg-white/95 backdrop-blur border-b border-nuit/10 shadow-sm" aria-label="Sections de l'équipe">
-        <div className="rangee-defilante max-w-[1400px] mx-auto px-4 md:px-10 flex gap-7 overflow-x-auto">
+      <nav className={`${CONTENEUR} mt-5 sticky top-0 z-40`} aria-label="Sections de l'équipe">
+        <ul className="rangee-defilante bg-bande flex overflow-x-auto">
           {ANCRES.filter(([a]) => presentes.has(a)).map(([a, l]) => (
-            <a key={a} href={`#${a}`} className="relative py-4 font-display uppercase tracking-wide text-nuit/70 hover:text-nuit whitespace-nowrap after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-jaune after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left">{l}</a>
+            <li key={a} className="shrink-0">
+              <a href={`#${a}`} className="block px-4 py-2.5 font-display uppercase text-[15px] text-white whitespace-nowrap hover:bg-bande-fonce">{l}</a>
+            </li>
           ))}
-        </div>
+        </ul>
       </nav>
 
-      {/* ===== PROCHAIN MATCH + SÉRIE ===== */}
-      {(prochains[0] || b.serie) && (
-        <section className="max-w-[1400px] mx-auto px-4 md:px-10 pt-14 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6">
-          {prochains[0] ? <CarteMatch r={prochains[0]} /> : <div />}
-          {b.serie && (
-            <div className="bg-papier p-7 flex flex-col justify-center gap-4 border-l-4 border-jaune">
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-violet">{archive ? `Dernière série · ${libelleSaison(saison)}` : 'Série en cours'}</p>
-                <p className="font-display text-4xl uppercase">
-                  {b.serie.longueur} {LIBELLE_SERIE[b.serie.resultat][b.serie.longueur > 1 ? 1 : 0]}
-                </p>
-              </div>
-              {b.record && (() => {
-                const i = issue(b.record)!;
-                return (
-                  <div>
-                    <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Plus large victoire</p>
-                    <p className="font-display text-xl uppercase">
-                      {i.pour} – {i.contre} <span className="text-nuit/50">contre {(b.record.domicile ? visiteur : recevant)(b.record).nom}</span>
-                    </p>
-                  </div>
-                );
-              })()}
-              <p className="text-sm text-nuit/50">{b.butsPour} buts marqués · {b.butsContre} encaissés · {b.joues ? (b.butsPour / b.joues).toFixed(1).replace('.', ',') : 0} par match</p>
+      {/* ===== PRÉSENTATION ===== */}
+      <Bloc id="presentation" titre="Présentation">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <div>
+            <div className="relative aspect-[16/9] bg-papier border border-filet overflow-hidden">
+              {equipe.photo
+                ? <ImageContenu src={equipe.photo} alt={`Photo de l'équipe ${equipe.nom}`} fill preload sizes="(min-width: 1170px) 620px, 100vw" className="object-cover" />
+                : <span className="absolute inset-0 flex items-center justify-center opacity-30"><Logo size={170} decoratif /></span>}
             </div>
-          )}
-        </section>
-      )}
+            {equipe.description && <p className="mt-4 text-[15px] leading-relaxed whitespace-pre-line">{equipe.description}</p>}
+          </div>
+          <div className="space-y-6">
+            <table className="w-full text-[14px] border-t border-filet">
+              <caption className="sr-only">Fiche de l&apos;équipe</caption>
+              <tbody>
+                {fiche.filter(([, v]) => v).map(([k, v]) => (
+                  <tr key={k} className="border-b border-filet align-top">
+                    <th scope="row" className="text-left font-display uppercase font-normal text-bande-fonce py-2 pr-4 w-32">{k}</th>
+                    <td className="py-2">{v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {b.joues > 0 && (
+              <div>
+                <p className="font-display uppercase text-nuit mb-2">Bilan · {libelle}</p>
+                <dl className="grid grid-cols-5 border border-filet text-center">
+                  {[
+                    ['Matchs', b.joues, ''],
+                    ['Vict.', b.victoires, 'text-victoire'],
+                    ['Nuls', b.nuls, ''],
+                    ['Déf.', b.defaites, 'text-defaite'],
+                    ['Diff.', `${diff > 0 ? '+' : ''}${diff}`, ''],
+                  ].map(([l, v, c]) => (
+                    <div key={l as string} className="py-2 border-r border-filet last:border-r-0">
+                      <dt className="text-[12px] text-encre/75">{l}</dt>
+                      <dd className={`font-display text-2xl leading-tight ${c}`}>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-3 text-[14px]">
+                  {b.forme.length > 0 && <span className="inline-flex items-center gap-2">Forme <Forme forme={b.forme} taille="sm" /></span>}
+                  {b.serie && <span>Série : <strong>{b.serie.longueur} {LIBELLE_SERIE[b.serie.resultat][b.serie.longueur > 1 ? 1 : 0]}</strong></span>}
+                  {b.record && (() => {
+                    const i = issue(b.record)!;
+                    return <span>Plus large victoire : <strong>{i.pour}-{i.contre}</strong> contre {(b.record.domicile ? visiteur : recevant)(b.record).nom}</span>;
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {prochains[0] && <CarteMatch r={prochains[0]} />}
+
+            <div className="bg-papier border border-filet p-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-[14px]"><strong className="font-display uppercase text-[17px] font-normal text-nuit block">Rejoindre l&apos;équipe</strong>Deux séances d&apos;essai gratuites.</p>
+              <BoutonLien href={`/contact?sujet=${encodeURIComponent(`Essai ${equipe.nom}`)}`} taille="sm">Venir essayer<Chevron className="w-2 h-2.5" /></BoutonLien>
+            </div>
+          </div>
+        </div>
+      </Bloc>
 
       {/* ===== CONVOCATIONS ===== */}
       {convocations.length > 0 && (
-        <section id="convocations" className="max-w-[1400px] mx-auto px-4 md:px-10 pt-16 md:pt-20 scroll-mt-36">
-          <EnTete surtitre="Prochains matchs" titre="Convocations" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Bloc id="convocations" titre="Convocations">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {convocations.map((c) => <CarteConvocation key={c.id} c={c} />)}
           </div>
-        </section>
+        </Bloc>
       )}
 
       {/* ===== EFFECTIF ===== */}
-      {presentes.has('effectif') && (
-        <section id="effectif" className="max-w-[1400px] mx-auto px-4 md:px-10 py-16 md:py-20 scroll-mt-36">
-          <EnTete surtitre={joueurs.length > 0 ? `${joueurs.length} joueur${joueurs.length > 1 ? 's' : ''}` : 'Saison en cours'} titre="Effectif" />
-          {joueurs.length > 0 ? <Effectif joueurs={joueurs} stats={stats} /> : <Vide>L&apos;effectif sera bientôt présenté.</Vide>}
-          {equipe.entraineur && (
-            <div className="mt-10">
-              <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-violet mb-4">Staff</h3>
-              <div className="inline-flex items-center gap-4 bg-papier pr-8 border-l-4 border-(--cat)" style={styleCategorie(equipe)}>
-                <span className="w-16 h-16 bg-losange flex items-center justify-center font-display text-2xl text-white">
-                  {equipe.entraineur.split(/\s+/).map((m) => m[0]).slice(0, 2).join('')}
-                </span>
-                <div>
-                  <p className="font-display text-xl uppercase">{equipe.entraineur}</p>
-                  <p className="font-mono text-[11px] uppercase tracking-widest text-nuit/50">Entraîneur</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
+      <Bloc id="effectif" titre="Effectif et staff">
+        {joueurs.length > 0 ? <Effectif joueurs={joueurs} stats={stats} /> : <Vide>L&apos;effectif sera bientôt présenté.</Vide>}
+        {equipe.entraineur && (
+          <div className="mt-8">
+            <h3 className="font-display uppercase text-xl text-nuit mb-3">Staff</h3>
+            <ul className="liste-chevrons space-y-1 text-[15px]">
+              {equipe.entraineur.split(/\s*[/,&]\s*/).filter(Boolean).map((n) => <li key={n}><strong>{n}</strong> · Entraîneur</li>)}
+            </ul>
+          </div>
+        )}
+      </Bloc>
 
       {/* ===== STATS JOUEURS ===== */}
       {stats.length > 0 && (
-        <section id="stats" className="max-w-[1400px] mx-auto px-4 md:px-10 pb-16 scroll-mt-36">
-          <EnTete surtitre={archive ? `Meilleurs buteurs · ${libelle}` : 'Meilleurs buteurs'} titre="Statistiques" />
+        <Bloc id="stats" titre={archive ? `Statistiques · ${libelleSaison(saison)}` : 'Statistiques'}>
           <StatsJoueurs stats={stats} matchsEquipe={matchsSaisis} />
-        </section>
+        </Bloc>
       )}
 
-      {/* ===== MATCHS ===== */}
-      <section id="matchs" className="bg-papier scroll-mt-36">
-        <div className="max-w-[1400px] mx-auto px-4 md:px-10 py-16 md:py-20 grid gap-14">
-          <div>
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-              <div>
-                <Surtitre className="text-violet mb-3">Calendrier</Surtitre>
-                <h2 className="font-display text-4xl md:text-5xl uppercase leading-[1.02]">À venir</h2>
-              </div>
-              <a href={`/equipes/${equipe.id}/calendrier.ics`} className="inline-flex items-center gap-2.5 border-2 border-nuit/15 bg-white px-4 py-2.5 font-display uppercase tracking-wide text-nuit hover:border-roi hover:text-roi transition-colors" title="Calendrier iCal : Google Agenda, Apple Calendrier, Outlook…">
-                <svg aria-hidden viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="5" width="18" height="16" /><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" /></svg>
-                Ajouter à mon agenda
-              </a>
-            </div>
-            {prochains.length === 0 ? <Vide titre="Pas de match programmé">Les prochaines rencontres de l&apos;équipe s&apos;afficheront ici.</Vide> : (
-              <div className="divide-y divide-nuit/10 bg-white shadow-sm">{prochains.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
-            )}
-          </div>
-          <div>
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-              <div>
-                <Surtitre className="text-violet mb-3">{libelle}</Surtitre>
-                <h2 className="font-display text-4xl md:text-5xl uppercase leading-[1.02]">Résultats</h2>
-              </div>
-              <SelecteurSaison saisons={saisons} active={saison} lien={(s) => `/equipes/${equipe.id}${s === courante ? '' : `?saison=${s}`}#matchs`} className="max-w-full" />
-            </div>
-            {resultats.length === 0 ? <Vide titre={archive ? 'Aucun résultat cette saison' : 'Pas encore de résultat'}>{archive ? `Aucun score enregistré pour la saison ${libelleSaison(saison)}.` : 'Les scores seront publiés après chaque match.'}</Vide> : (
-              <div className="divide-y divide-nuit/10 bg-white shadow-sm">{resultats.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
-            )}
-          </div>
+      {/* ===== CALENDRIER / RÉSULTATS ===== */}
+      <Bloc
+        id="calendrier"
+        titre="Calendrier / Résultats"
+        action={
+          <a href={`/equipes/${equipe.id}/calendrier.ics`} className="inline-flex items-center gap-2 bg-bande text-white font-display uppercase text-[15px] px-3.5 py-1.5 hover:bg-bande-fonce" title="Calendrier iCal : Google Agenda, Apple Calendrier, Outlook…">
+            <svg aria-hidden viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="5" width="18" height="16" /><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5" /></svg>
+            Ajouter à mon agenda
+          </a>
+        }
+      >
+        <h3 className="font-display uppercase text-xl text-nuit mb-2">À venir</h3>
+        {prochains.length === 0 ? <Vide>Les prochaines rencontres de l&apos;équipe s&apos;afficheront ici.</Vide> : (
+          <div className="divide-y divide-filet border-y border-filet">{prochains.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-8 mb-2">
+          <h3 className="font-display uppercase text-xl text-nuit">Résultats · {libelle}</h3>
+          <SelecteurSaison saisons={saisons} active={saison} lien={(s) => `/equipes/${equipe.id}${s === courante ? '' : `?saison=${s}`}#calendrier`} className="max-w-full" />
         </div>
-      </section>
+        {resultats.length === 0 ? <Vide>{archive ? `Aucun score enregistré pour la saison ${libelleSaison(saison)}.` : 'Les scores seront publiés après chaque match.'}</Vide> : (
+          <div className="divide-y divide-filet border-y border-filet">{resultats.map((r) => <LigneMatch key={r.id} r={r} />)}</div>
+        )}
+      </Bloc>
 
-      {/* ===== CLASSEMENT + ENTRAÎNEMENTS ===== */}
-      <section className={`max-w-[1400px] mx-auto px-4 md:px-10 py-16 md:py-20 grid grid-cols-1 gap-12 ${classement.length ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
-        {classement.length > 0 ? (
-          <div id="classement" className="scroll-mt-36 space-y-12">
+      {/* ===== CLASSEMENT ===== */}
+      <Bloc id="classement" titre="Classement">
+        {classements.length === 0 ? (
+          <Vide>{competitions.length ? 'Le classement apparaîtra après les premières journées.' : "L'équipe ne dispute pas de championnat."}</Vide>
+        ) : (
+          <div className="space-y-10">
             {classements.map(({ c, lignes }) => (
               <div key={c.id}>
-                <Surtitre className="text-violet mb-3">{c.niveau || 'Championnat'}</Surtitre>
-                <h2 className="font-display text-4xl md:text-5xl uppercase leading-[1.02]">Classement</h2>
-                <p className="text-sm text-nuit/65 mt-2 mb-6">{nomCompetition(c)}</p>
+                <p className="text-[14px] text-encre/80 mb-3"><strong className="text-nuit">{nomCompetition(c)}</strong>{c.niveau ? ` · ${c.niveau}` : ''}</p>
                 <TableClassement lignes={lignes} legende={`Classement ${nomCompetition(c)}`} />
               </div>
             ))}
           </div>
-        ) : null}
-        <aside id="entrainements" className={`scroll-mt-36 grid gap-6 content-start ${classement.length ? '' : 'md:grid-cols-2'}`}>
-          <div className="bg-nuit text-white p-7 md:p-8 motif-losanges">
-            <h2 className="font-display text-3xl uppercase mb-6 flex items-center gap-3"><span aria-hidden className="w-3 h-3 rotate-45 bg-jaune" />Entraînements</h2>
-            {creneaux.length === 0 ? <p className="text-white/70 text-sm">Horaires à venir.</p> : (
-              <ul className="space-y-4">
-                {creneaux.map((c) => (
-                  <li key={c.id} className="border-l-2 border-jaune pl-4">
-                    <p className="font-display text-lg uppercase">{JOURS[c.jour]}</p>
-                    <p className="font-mono text-sm text-glacier">{formatHeure(c.heureDebut)} – {formatHeure(c.heureFin)}</p>
-                    <p className="text-sm text-white/70">{c.gymnase.nom}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="relative overflow-hidden bg-losange text-white p-7 md:p-8 flex flex-col justify-end min-h-[260px]">
-            <span aria-hidden className="absolute -right-12 -top-12 w-48 aspect-square rotate-45 border-[14px] border-white/10" />
-            <span aria-hidden className="absolute right-6 top-6 opacity-90"><Logo size={88} decoratif /></span>
-            <p className="relative font-display text-4xl uppercase leading-[1.08] mb-3">Rejoindre<br />l&apos;équipe</p>
-            <p className="relative text-white/85 mb-6">Deux séances d&apos;essai gratuites.</p>
-            <div className="relative"><BoutonLien href={`/contact?sujet=${encodeURIComponent(`Essai ${equipe.nom}`)}`}>Venir essayer</BoutonLien></div>
-          </div>
-        </aside>
-      </section>
+        )}
+      </Bloc>
+
+      {/* ===== ENTRAÎNEMENTS ===== */}
+      {creneaux.length > 0 && (
+        <Bloc id="entrainements" titre="Entraînements">
+          <ul className="liste-chevrons space-y-1.5 text-[15px]">
+            {creneaux.map((c) => (
+              <li key={c.id}><strong>{JOURS[c.jour]}</strong> de {formatHeure(c.heureDebut)} à {formatHeure(c.heureFin)} · {c.gymnase.nom}</li>
+            ))}
+          </ul>
+        </Bloc>
+      )}
     </>
   );
 }

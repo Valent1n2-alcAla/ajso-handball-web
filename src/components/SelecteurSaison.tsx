@@ -7,11 +7,11 @@ export default function SelecteurSaison({ saisons, active, lien, className = '' 
 }) {
   if (saisons.length < 2) return null;
   return (
-    <nav aria-label="Saison" className={`rangee-defilante flex items-center gap-2 overflow-x-auto ${className}`}>
-      <span className="shrink-0 font-mono text-[11px] uppercase tracking-widest text-nuit/55 mr-1">Saison</span>
+    <nav aria-label="Saison" className={`rangee-defilante flex items-center gap-1.5 overflow-x-auto ${className}`}>
+      <span className="shrink-0 font-display uppercase text-[14px] text-encre mr-1">Saison</span>
       {saisons.map((s) => (
         <Link key={s} href={lien(s)} scroll={false} aria-current={s === active ? 'page' : undefined}
-          className={`shrink-0 font-mono text-xs font-semibold tracking-wider px-3 py-2 border-2 transition-colors ${s === active ? 'border-nuit bg-nuit text-white' : 'border-nuit/10 bg-white hover:border-violet'}`}>
+          className={`shrink-0 font-display text-[15px] px-3 py-1 ${s === active ? 'bg-nuit text-white' : 'bg-bande text-white hover:bg-bande-fonce'}`}>
           {libelleSaison(s)}
         </Link>
       ))}

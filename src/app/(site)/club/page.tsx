@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Logo from '@/components/Logo';
-import { BoutonLien, PageHero, Section } from '@/components/ui';
+import { BoutonLien, Chevron, EnTete, Section, TitrePage } from '@/components/ui';
 import ListeDocuments from '@/components/Documents';
 import { getClub, getDocuments, getEquipesClub, getGymnases } from '@/lib/api';
 
@@ -19,95 +20,71 @@ export default async function ClubPage() {
 
   return (
     <>
-      <PageHero surtitre="Ouistreham Riva-Bella · Calvados" titre={<>Le <span className="text-degrade">club</span></>}>
-        {club?.nom ?? 'AJS Ouistreham Handball'}
-      </PageHero>
+      <TitrePage titre="Le club" />
 
-      <Section className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-12 items-center">
-        <div className="relative flex justify-center">
-          <div aria-hidden className="absolute inset-8 rotate-45 bg-losange opacity-15" />
-          <Logo size={300} className="relative" />
-        </div>
-        <div>
-          <h2 className="font-display text-4xl md:text-5xl uppercase mb-6">Bienvenue chez les Ratons</h2>
-          <p className="text-lg text-nuit/75 leading-relaxed whitespace-pre-line">
+      <Section className="grid grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)] gap-8 items-start">
+        <Logo size={200} />
+        <div className="text-[15px] leading-relaxed">
+          <h2 className="font-display text-[1.75rem] uppercase leading-tight text-bande mb-3">{club?.nom ?? 'AJS Ouistreham Handball'}</h2>
+          <p className="whitespace-pre-line">
             {club?.presentation ?? "Club de handball de Ouistreham Riva-Bella, l'AJSO accueille petits et grands, en loisir comme en compétition."}
           </p>
-          <dl className="grid grid-cols-2 gap-6 mt-10">
-            <div className="border-l-4 border-violet pl-4">
-              <dt className="font-mono text-[11px] uppercase tracking-widest text-nuit/50">Équipes</dt>
-              <dd className="font-display text-5xl">{equipes.length}</dd>
-            </div>
-            {club?.label && (
-              <div className="border-l-4 border-jaune pl-4">
-                <dt className="font-mono text-[11px] uppercase tracking-widest text-nuit/50">Label</dt>
-                <dd className="font-display text-2xl uppercase leading-tight mt-1">{club.label}</dd>
-              </div>
-            )}
-          </dl>
+          <ul className="liste-chevrons mt-4 space-y-0.5">
+            <li><strong>{equipes.length} équipes</strong> engagées cette saison, <Link href="/equipes" className="text-bande-fonce font-semibold hover:underline">voir les équipes</Link></li>
+            {club?.label && <li>{club.label}</li>}
+            {club?.president && <li>Président : <strong>{club.president}</strong></li>}
+            {club?.contact && club.contact !== club.president && <li>Contact : <strong>{club.contact}</strong></li>}
+          </ul>
         </div>
       </Section>
 
-      <section className="bg-nuit text-white motif-losanges">
-        <Section sombre surtitre="L'esprit AJSO" titre="Nos valeurs">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {VALEURS.map(([t, d], i) => (
-              <div key={t} className="group border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] transition-colors p-8 relative overflow-hidden">
-                <span aria-hidden className="font-display text-8xl text-white/10 absolute right-5 top-1 leading-none">{i + 1}</span>
-                <span aria-hidden className="block w-8 h-1 bg-jaune mb-6 transition-all group-hover:w-16" />
-                <h3 className="font-display text-3xl uppercase text-jaune mb-3">{t}</h3>
-                <p className="text-white/75">{d}</p>
-              </div>
-            ))}
-          </div>
-        </Section>
-      </section>
+      <Section titre="Nos valeurs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {VALEURS.map(([t, d]) => (
+            <div key={t} className="border border-filet border-t-4 border-t-bande p-5">
+              <h3 className="font-display text-xl uppercase text-nuit mb-1">{t}</h3>
+              <p className="text-[14.5px]">{d}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
 
-      <Section surtitre="Dirigeants" titre="Le bureau">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {club?.president && (
-            <div className="bg-papier p-7 border-l-4 border-violet">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Président</p>
-              <p className="font-display text-2xl uppercase mt-1">{club.president}</p>
-            </div>
-          )}
-          {club?.contact && club.contact !== club.president && (
-            <div className="bg-papier p-7 border-l-4 border-roi">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-violet">Contact</p>
-              <p className="font-display text-2xl uppercase mt-1">{club.contact}</p>
-            </div>
-          )}
-          <div className="bg-losange text-white p-7 flex flex-col justify-between gap-4">
-            <p className="font-display text-2xl uppercase">Envie de vous investir ?</p>
-            <p className="text-white/80 text-sm">Le club recherche toujours des bénévoles : arbitrage, table de marque, buvette, encadrement…</p>
-            <div><BoutonLien href="/benevoles">Voir les besoins</BoutonLien></div>
+      <Section>
+        <div className="bg-nuit text-white p-6 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <h2 className="font-display text-2xl uppercase">Envie de vous investir&nbsp;?</h2>
+            <p className="text-white/85 text-[14.5px] mt-1">Le club recherche toujours des bénévoles : arbitrage, table de marque, buvette, encadrement…</p>
           </div>
+          <BoutonLien href="/benevoles" variante="jaune">Voir les besoins<Chevron className="w-2 h-2.5" /></BoutonLien>
         </div>
       </Section>
 
       {documentsClub.length > 0 && (
-        <Section surtitre="Vie associative" titre="Documents" className="pt-0 md:pt-0">
+        <Section titre="Documents">
           <ListeDocuments documents={documentsClub} />
         </Section>
       )}
 
-      <section className="bg-papier">
-        <Section surtitre="Où nous trouver" titre="Nos gymnases">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {gymnases.length > 0 && (
+        <Section>
+          <EnTete titre="Nos gymnases" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {gymnases.map((g) => {
               const adresse = [g.adresse, g.codePostal, g.ville].filter(Boolean).join(' ');
               return (
-                <div key={g.id} className="relative bg-white p-8 pl-10 flex flex-col gap-4 shadow-sm hover:shadow-xl hover:shadow-nuit/10 transition-shadow before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-losange">
-                  <h3 className="font-display text-3xl uppercase leading-[1.02]">{g.nom}</h3>
-                  <p className="text-nuit/70">{adresse}</p>
+                <div key={g.id} className="border border-filet p-5">
+                  <h3 className="font-display text-xl uppercase text-nuit">{g.nom}</h3>
+                  <p className="text-[14.5px] mt-1">{adresse}</p>
                   <a href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(adresse)}`} target="_blank" rel="noopener noreferrer"
-                    className="font-display uppercase text-roi hover:text-violet self-start">Itinéraire →</a>
+                    className="inline-flex items-center gap-2 mt-3 font-display uppercase text-bande-fonce hover:underline">
+                    Itinéraire<Chevron className="w-2 h-2.5" /><span className="sr-only">(OpenStreetMap, nouvel onglet)</span>
+                  </a>
                 </div>
               );
             })}
           </div>
         </Section>
-      </section>
+      )}
     </>
   );
 }

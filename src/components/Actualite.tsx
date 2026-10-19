@@ -1,38 +1,67 @@
 import Link from 'next/link';
 import ImageContenu from './ImageContenu';
 import Logo from './Logo';
-import { extrait, formatDatePub } from '@/lib/format';
+import { extrait, FUSEAU } from '@/lib/format';
 import type { Actualite } from '@/lib/types';
 
-/** Visuel d'un article : sa photo, sinon un fond aux couleurs du club avec le logo. */
-export function VisuelActu({ a, sizes, variante = 0, logo = 96 }: { a: Actualite; sizes: string; variante?: number; logo?: number }) {
+const FONDS = ['bg-bande', 'bg-nuit', 'bg-bande-fonce'];
+
+/** Visuel d'un article : sa photo, sinon un aplat aux couleurs du club avec le logo en filigrane. */
+export function VisuelActu({ a, sizes, variante = 0, logo = 110, prioritaire = false }: { a: Pick<Actualite, 'image'>; sizes: string; variante?: number; logo?: number; prioritaire?: boolean }) {
   return (
-    <div className={`absolute inset-0 overflow-hidden ${variante % 2 === 0 ? 'bg-losange' : 'bg-nuit motif-losanges'}`}>
+    <div className={`absolute inset-0 overflow-hidden ${FONDS[variante % FONDS.length]}`}>
       {a.image ? (
-        <ImageContenu src={a.image} alt="" fill sizes={sizes} className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <ImageContenu src={a.image} alt="" fill sizes={sizes} preload={prioritaire} className="object-cover" />
       ) : (
-        <span aria-hidden className="absolute inset-0 flex items-center justify-center">
-          <span className="absolute w-[55%] max-w-64 aspect-square rotate-45 border-2 border-white/15 group-hover:rotate-[60deg] transition-transform duration-700" />
-          <span className="relative opacity-90 group-hover:scale-105 transition-transform duration-500"><Logo size={logo} decoratif /></span>
+        <span aria-hidden className="absolute inset-0 flex items-center justify-center opacity-25">
+          <Logo size={logo} decoratif />
         </span>
       )}
     </div>
   );
 }
 
-/** Carte d'article (accueil, liste des actualités). */
+/** Carte d'article de l'accueil : visuel puis titre. */
 export function CarteActu({ a, i = 0 }: { a: Actualite; i?: number }) {
   return (
-    <Link href={`/actualites/${a.id}`} className="group flex flex-col bg-white shadow-sm ring-1 ring-nuit/5 hover:shadow-xl hover:shadow-nuit/10 hover:-translate-y-1 transition duration-300">
-      <div className="relative aspect-[16/10]">
-        <VisuelActu a={a} variante={i} sizes="(min-width: 768px) 33vw, 100vw" />
-        <span className="absolute left-0 bottom-0 bg-jaune text-nuit font-mono text-[10px] uppercase tracking-widest px-3 py-1.5">{formatDatePub(a.datePub)}</span>
+    <Link href={`/actualites/${a.id}`} className="group grid grid-cols-[130px_minmax(0,1fr)] gap-3 items-start sm:block">
+      <div className="relative aspect-[4/3]">
+        <VisuelActu a={a} variante={i} logo={70} sizes="(min-width: 1024px) 270px, (min-width: 640px) 33vw, 130px" />
       </div>
-      <div className="p-5 md:p-6 flex flex-col flex-1">
-        <h3 className="font-display text-2xl uppercase leading-[1.12] group-hover:text-roi transition-colors">{a.titre}</h3>
-        <p className="text-nuit/70 mt-2">{extrait(a.extrait ?? a.contenu, 140)}</p>
-        <span className="mt-auto pt-4 font-display uppercase tracking-wide text-roi">Lire l&apos;article <span aria-hidden className="inline-block transition-transform group-hover:translate-x-1">→</span></span>
-      </div>
+      <h3 className="font-display uppercase text-nuit text-[17px] leading-snug sm:mt-2 group-hover:text-bande-fonce group-hover:underline">{a.titre}</h3>
     </Link>
+  );
+}
+
+/** Bloc date « 24 / JUIL / 2025 » souligné d'un filet épais. */
+export function BlocDate({ date }: { date: string }) {
+  const d = new Date(date);
+  const f = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString('fr-FR', { ...o, timeZone: FUSEAU });
+  return (
+    <div className="w-[70px] md:w-[86px] shrink-0 text-center font-display uppercase text-bande leading-[0.95]">
+      <time dateTime={d.toISOString()} className="block pb-2 border-b-[6px] md:border-b-8 border-nuit">
+        <span className="block text-[2.3rem] md:text-[2.8rem]">{f({ day: '2-digit' })}</span>
+        <span className="block text-[1.4rem] md:text-[1.75rem]">{f({ month: 'short' }).replace('.', '').slice(0, 4)}</span>
+        <span className="block text-[1.2rem] md:text-[1.45rem]">{f({ year: 'numeric' })}</span>
+      </time>
+    </div>
+  );
+}
+
+/** Ligne de la liste des actualités : date, vignette, titre, extrait. */
+export function LigneActu({ a, i = 0 }: { a: Actualite; i?: number }) {
+  return (
+    <article className="flex gap-3 md:gap-5 py-5 border-b border-filet">
+      <BlocDate date={a.datePub} />
+      <Link href={`/actualites/${a.id}`} tabIndex={-1} aria-hidden className="relative hidden sm:block shrink-0 w-[170px] aspect-[16/10] self-start">
+        <VisuelActu a={a} variante={i} logo={64} sizes="170px" />
+      </Link>
+      <div className="min-w-0 flex-1">
+        <h2 className="font-display uppercase text-nuit text-lg md:text-xl leading-snug">
+          <Link href={`/actualites/${a.id}`} className="hover:text-bande-fonce hover:underline">{a.titre}</Link>
+        </h2>
+        <p className="text-[14px] text-encre/85 mt-1.5 leading-relaxed">{extrait(a.extrait ?? a.contenu, 260)}</p>
+      </div>
+    </article>
   );
 }

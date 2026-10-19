@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Visionneuse from '@/components/Visionneuse';
-import { Section, Vide } from '@/components/ui';
+import { Section, TitrePage, Vide } from '@/components/ui';
 import { getAlbum } from '@/lib/api';
 import { extrait, formatDateLongue } from '@/lib/format';
 
@@ -23,14 +22,10 @@ export default async function AlbumPage({ params }: PageProps<'/galerie/[id]'>) 
 
   return (
     <>
-      <header className="bg-nuit text-white motif-losanges">
-        <div className="max-w-[1400px] mx-auto px-4 md:px-10 pt-14 pb-14">
-          <Link href="/galerie" className="font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">← Galerie</Link>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-jaune mt-8 mb-3 capitalize">{formatDateLongue(album.date)}</p>
-          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[1.02]">{album.titre}</h1>
-          {album.description && <p className="text-white/70 mt-5 max-w-2xl text-lg">{album.description}</p>}
-        </div>
-      </header>
+      <TitrePage titre={album.titre} retour={{ href: '/galerie', label: 'Galerie' }}>
+        <p className="text-[13px] font-semibold text-bande-fonce first-letter:uppercase">{formatDateLongue(album.date)}</p>
+        {album.description && <p className="mt-2">{album.description}</p>}
+      </TitrePage>
       <Section>
         {(album.photos ?? []).length === 0 ? <Vide>Photos à venir.</Vide> : <Visionneuse photos={album.photos ?? []} />}
       </Section>

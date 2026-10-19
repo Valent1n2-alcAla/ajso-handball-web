@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { PageHero, Section, Vide } from '@/components/ui';
+import { Section, TitrePage, Vide } from '@/components/ui';
+import Logo from '@/components/Logo';
 import { getAlbums } from '@/lib/api';
 import { formatDateLongue } from '@/lib/format';
 import ImageContenu from '@/components/ImageContenu';
@@ -14,20 +15,20 @@ export default async function GaleriePage() {
   const albums = await getAlbums();
   return (
     <>
-      <PageHero surtitre="En images" titre="Galerie">Matchs, tournois et moments du club.</PageHero>
+      <TitrePage titre="Galerie photos">Matchs, tournois et moments du club.</TitrePage>
       <Section>
         {albums.length === 0 ? <Vide>Les premiers albums arrivent bientôt.</Vide> : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {albums.map((a) => (
               <Link key={a.id} href={`/galerie/${a.id}`} className="group block">
-                <div className="aspect-[4/3] bg-losange overflow-hidden relative">
+                <div className="aspect-[4/3] bg-bande overflow-hidden relative">
                   {a.couverture ? (
-                    <ImageContenu src={a.couverture} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : <span className="absolute inset-0 flex items-center justify-center font-display text-6xl text-white/15">AJSO</span>}
-                  <span className="absolute bottom-3 right-3 bg-nuit/80 text-white font-mono text-xs px-2.5 py-1">{a.nombrePhotos} photo{a.nombrePhotos > 1 ? 's' : ''}</span>
+                    <ImageContenu src={a.couverture} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+                  ) : <span aria-hidden className="absolute inset-0 flex items-center justify-center opacity-25"><Logo size={130} decoratif /></span>}
+                  <span className="absolute bottom-0 right-0 bg-nuit text-white text-[13px] px-2.5 py-1">{a.nombrePhotos} photo{a.nombrePhotos > 1 ? 's' : ''}</span>
                 </div>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-violet mt-4 capitalize">{formatDateLongue(a.date)}</p>
-                <h2 className="font-display text-2xl uppercase leading-tight group-hover:text-roi">{a.titre}</h2>
+                <p className="text-[13px] font-semibold text-bande-fonce mt-2 first-letter:uppercase">{formatDateLongue(a.date)}</p>
+                <h2 className="font-display text-xl uppercase leading-tight text-nuit group-hover:underline">{a.titre}</h2>
               </Link>
             ))}
           </div>

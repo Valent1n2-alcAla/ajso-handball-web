@@ -2,12 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LigneMatch } from '@/components/Match';
 import SelecteurSaison from '@/components/SelecteurSaison';
-import { PageHero, Section, Vide } from '@/components/ui';
+import { CONTENEUR, TitrePage, Vide } from '@/components/ui';
 import { getDatePremierMatch, getEquipesClub, getProchainsMatchs, getResultatsSaison } from '@/lib/api';
 import { libelleSaison, lireSaison, saisonCourante, saisonsDisponibles } from '@/lib/saison';
 import { FUSEAU, parseDate } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
-import { styleCategorie } from '@/lib/categories';
 
 export const metadata: Metadata = {
   title: 'Calendrier & résultats',
@@ -45,29 +44,35 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
 
   return (
     <>
-      <PageHero surtitre={archive ? `Saison ${libelleSaison(saison)}` : 'Saison en cours'} titre={<>Calendrier <span className="text-jaune">&amp;</span> résultats</>} />
-      <Section>
-        <div className="flex flex-col lg:flex-row lg:items-start gap-6 mb-12">
-          <nav className="inline-flex shrink-0 self-start bg-papier p-1.5" aria-label="Vue">
+      <TitrePage titre="Calendrier et résultats">{archive ? `Saison ${libelleSaison(saison)}` : null}</TitrePage>
+      <div className={`${CONTENEUR} pt-5`}>
+        <div className="bg-bande p-2.5 flex flex-wrap items-center gap-2.5">
+          <nav className="flex shrink-0" aria-label="Vue">
             {[['avenir', 'À venir'], ['resultats', 'Résultats']].map(([v, l]) => (
               <Link key={v} href={lien(v, equipeId)} aria-current={vue === v ? 'page' : undefined}
-                className={`font-display uppercase tracking-wide text-lg px-6 py-2.5 transition-colors ${vue === v ? 'bg-nuit text-white shadow-md' : 'text-nuit/70 hover:text-nuit'}`}>
+                className={`font-display uppercase text-[15px] px-4 py-1.5 ${vue === v ? 'bg-nuit text-white' : 'bg-white text-nuit hover:bg-bande-clair'}`}>
                 {l}
               </Link>
             ))}
           </nav>
-          <nav className="rangee-defilante flex lg:flex-wrap gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1" aria-label="Filtrer par équipe">
-            <Link href={lien(vue, '')} aria-current={!equipeId ? 'page' : undefined} className={`shrink-0 text-sm font-semibold px-4 py-2 border-2 transition-colors ${!equipeId ? 'border-violet bg-violet text-white' : 'border-nuit/10 hover:border-violet'}`}>Toutes les équipes</Link>
-            {equipes.map((e) => (
-              <Link key={e.id} href={lien(vue, String(e.id))} aria-current={equipeId === String(e.id) ? 'page' : undefined} style={styleCategorie(e)}
-                className={`shrink-0 inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 border-2 whitespace-nowrap transition-colors ${equipeId === String(e.id) ? 'border-violet bg-violet text-white' : 'border-nuit/10 hover:border-violet'}`}>
-                <span aria-hidden className="w-2 h-2 rotate-45 bg-(--cat)" />
-                {e.nom}
-              </Link>
-            ))}
-          </nav>
+          <form action="/calendrier" className="flex items-center gap-2">
+            {vue === 'resultats' && <input type="hidden" name="vue" value="resultats" />}
+            {vue === 'resultats' && saison !== courante && <input type="hidden" name="saison" value={saison} />}
+            <label htmlFor="filtre-equipe" className="font-display uppercase text-white text-[15px]">Équipe</label>
+            <select id="filtre-equipe" name="equipe" defaultValue={equipeId} className="bg-white text-nuit text-[14px] px-2 py-1.5 max-w-[60vw]">
+              <option value="">Toutes les équipes</option>
+              {equipes.map((e) => <option key={e.id} value={e.id}>{e.nom}</option>)}
+            </select>
+            <button type="submit" className="bg-nuit text-white font-display uppercase px-3 py-1.5 hover:bg-bande-fonce">OK</button>
+          </form>
         </div>
-        {vue === 'resultats' && <SelecteurSaison saisons={saisons} active={saison} lien={(s) => lien('resultats', equipeId, s)} className="-mt-6 mb-12 -mx-4 px-4 md:mx-0 md:px-0 pb-1" />}
+        {vue === 'resultats' && <SelecteurSaison saisons={saisons} active={saison} lien={(s) => lien('resultats', equipeId, s)} className="mt-4" />}
+        {equipeId && (
+          <nav aria-label="Filtre actif" className="mt-4 text-[14px]">
+            Équipe : <strong>{equipes.find((e) => String(e.id) === equipeId)?.nom ?? 'inconnue'}</strong> · <Link href={lien(vue, '')} className="text-bande-fonce font-semibold hover:underline">voir toutes les équipes</Link>
+          </nav>
+        )}
+        <div className="mt-6">
 
         {matchs.length === 0 ? (
           <Vide
@@ -77,23 +82,22 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
             {vue === 'resultats' ? 'Les scores seront publiés ici après chaque rencontre.' : 'Les prochaines rencontres seront annoncées ici dès leur programmation.'}
           </Vide>
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-8">
             {parMois(matchs).map(([mois, liste]) => (
               <div key={mois}>
-                <h2 className="flex items-center gap-4 font-display text-3xl md:text-4xl uppercase mb-4">
-                  <span aria-hidden className="w-3 h-3 rotate-45 bg-jaune" />
+                <h2 className="flex items-baseline justify-between gap-4 font-display text-2xl uppercase text-bande border-b-2 border-bande pb-1">
                   {mois}
-                  <span aria-hidden className="flex-1 h-px bg-nuit/10" />
-                  <span className="font-mono text-xs tracking-widest text-nuit/60">{liste.length} match{liste.length > 1 ? 's' : ''}</span>
+                  <span className="font-body normal-case text-[13px] text-encre/75">{liste.length} match{liste.length > 1 ? 's' : ''}</span>
                 </h2>
-                <div className="divide-y divide-nuit/10 border-y border-nuit/10">
+                <div className="divide-y divide-filet border-b border-filet">
                   {liste.map((r) => <LigneMatch key={r.id} r={r} />)}
                 </div>
               </div>
             ))}
           </div>
         )}
-      </Section>
+        </div>
+      </div>
     </>
   );
 }

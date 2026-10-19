@@ -11,63 +11,62 @@ export default function StatsJoueurs({ stats, matchsEquipe }: { stats: StatJoueu
   const avecSanctions = stats.some((s) => s.exclusions + s.cartons > 0);
   const gardien = [...stats].filter((s) => s.arrets > 0).sort((a, b) => b.arrets - a.arrets)[0];
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       {podium.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ol className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {podium.map((s, i) => (
-            <div key={s.joueur.id} className={`relative overflow-hidden p-6 ${i === 0 ? 'bg-losange text-white' : 'bg-nuit text-white'}`}>
-              <span aria-hidden className="absolute -right-3 -top-6 font-display text-[7rem] leading-none text-white/10">{i + 1}</span>
-              <p className="font-mono text-[11px] uppercase tracking-widest text-jaune">{i === 0 ? 'Meilleur buteur' : `${i + 1}e buteur`}</p>
-              <p className="font-display text-2xl uppercase mt-2 leading-tight">{s.joueur.nomAffiche}</p>
-              <p className="mt-4 flex items-baseline gap-2">
-                <span className="font-display text-6xl leading-none">{s.buts}</span>
-                <span className="font-mono text-xs text-white/60">buts · {virgule(s.moyenne)}/match</span>
+            <li key={s.joueur.id} className={`border border-filet border-t-4 p-4 ${i === 0 ? 'border-t-jaune' : 'border-t-bande'}`}>
+              <p className="text-[13px] text-encre/75">{i === 0 ? 'Meilleur buteur' : `${i + 1}e buteur`}</p>
+              <p className="font-display text-xl uppercase leading-tight text-nuit">{s.joueur.nomAffiche}</p>
+              <p className="mt-2 flex items-baseline gap-2">
+                <span className="font-display text-4xl leading-none text-bande">{s.buts}</span>
+                <span className="text-[13px] text-encre/75">buts · {virgule(s.moyenne)} par match</span>
               </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       )}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[14px] border border-filet">
           <thead>
-            <tr className="font-mono text-[11px] uppercase tracking-widest text-nuit/50 border-b-2 border-nuit">
-              <th className="text-left py-3 pr-3">Joueur</th>
-              <th className="text-right py-3 px-2" title="Matchs joués">MJ</th>
-              <th className="text-right py-3 px-2">Buts</th>
-              <th className="text-right py-3 px-2" title="Buts par match">Moy.</th>
-              <th className="text-right py-3 px-2" title="Meilleur total sur un match">Record</th>
-              {avecTirs && <th className="text-right py-3 px-2" title="Buts / tirs">Réussite</th>}
-              {avecTirs && <th className="text-right py-3 px-2" title="Buts sur jet de 7 m">7 m</th>}
-              {avecArrets && <th className="text-right py-3 px-2">Arrêts</th>}
-              {avecSanctions && <th className="text-right py-3 pl-2" title="Exclusions de 2 minutes / cartons">2&apos; / Cartons</th>}
+            <tr className="font-display uppercase text-[14px] text-white bg-bande">
+              <th className="text-left py-2 px-3">Joueur</th>
+              <th className="text-right py-2 px-2" title="Matchs joués">MJ</th>
+              <th className="text-right py-2 px-2">Buts</th>
+              <th className="text-right py-2 px-2" title="Buts par match">Moy.</th>
+              <th className="text-right py-2 px-2" title="Meilleur total sur un match">Record</th>
+              {avecTirs && <th className="text-right py-2 px-2" title="Buts / tirs">Réussite</th>}
+              {avecTirs && <th className="text-right py-2 px-2" title="Buts sur jet de 7 m">7 m</th>}
+              {avecArrets && <th className="text-right py-2 px-2">Arrêts</th>}
+              {avecSanctions && <th className="text-right py-2 pl-2 pr-3" title="Exclusions de 2 minutes / cartons">2&apos; / Cartons</th>}
             </tr>
           </thead>
           <tbody>
             {stats.map((s) => (
-              <tr key={s.joueur.id} className="border-b border-nuit/10">
-                <td className="py-3 pr-3">
-                  {s.joueur.numero != null && <span className="font-display text-lg text-violet inline-block w-9">{s.joueur.numero}</span>}
+              <tr key={s.joueur.id} className="border-b border-filet even:bg-papier">
+                <td className="py-2 px-3">
+                  {s.joueur.numero != null && <span className="font-display text-lg text-bande inline-block w-8">{s.joueur.numero}</span>}
                   <span className="uppercase font-semibold">{s.joueur.nomAffiche}</span>
                 </td>
-                <td className="py-3 px-2 text-right font-mono">{s.matchs}{matchsEquipe ? <span className="text-nuit/30">/{matchsEquipe}</span> : null}</td>
-                <td className="py-3 px-2 text-right font-display text-xl">{s.buts}</td>
-                <td className="py-3 px-2 text-right font-mono">{virgule(s.moyenne)}</td>
-                <td className="py-3 px-2 text-right font-mono">{s.record}</td>
-                {avecTirs && <td className="py-3 px-2 text-right font-mono">{s.tirs ? `${Math.round((s.buts / s.tirs) * 100)} %` : '—'}</td>}
-                {avecTirs && <td className="py-3 px-2 text-right font-mono">{s.buts7m || '—'}</td>}
-                {avecArrets && <td className="py-3 px-2 text-right font-mono">{s.arrets || '—'}</td>}
-                {avecSanctions && <td className="py-3 pl-2 text-right font-mono">{s.exclusions} / {s.cartons}</td>}
+                <td className="py-2 px-2 text-right">{s.matchs}{matchsEquipe ? <span className="text-encre/60">/{matchsEquipe}</span> : null}</td>
+                <td className="py-2 px-2 text-right font-display text-lg">{s.buts}</td>
+                <td className="py-2 px-2 text-right">{virgule(s.moyenne)}</td>
+                <td className="py-2 px-2 text-right">{s.record}</td>
+                {avecTirs && <td className="py-2 px-2 text-right">{s.tirs ? `${Math.round((s.buts / s.tirs) * 100)} %` : '—'}</td>}
+                {avecTirs && <td className="py-2 px-2 text-right">{s.buts7m || '—'}</td>}
+                {avecArrets && <td className="py-2 px-2 text-right">{s.arrets || '—'}</td>}
+                {avecSanctions && <td className="py-2 pl-2 pr-3 text-right">{s.exclusions} / {s.cartons}</td>}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       {gardien && (
-        <p className="text-sm text-nuit/70">
-          🧤 Gardien le plus décisif : <strong className="uppercase">{gardien.joueur.nomAffiche}</strong>, {gardien.arrets} arrêts en {gardien.matchs} match{gardien.matchs > 1 ? 's' : ''}.
+        <p className="text-[14px]">
+          Gardien le plus décisif : <strong className="uppercase">{gardien.joueur.nomAffiche}</strong>, {gardien.arrets} arrêts en {gardien.matchs} match{gardien.matchs > 1 ? 's' : ''}.
         </p>
       )}
-      <p className="text-xs text-nuit/40">D&apos;après les feuilles de match saisies ({matchsEquipe} match{matchsEquipe > 1 ? 's' : ''}).</p>
+      <p className="text-[13px] text-encre/70">D&apos;après les feuilles de match saisies ({matchsEquipe} match{matchsEquipe > 1 ? 's' : ''}).</p>
     </div>
   );
 }

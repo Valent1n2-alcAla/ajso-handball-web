@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import TableClassement from '@/components/TableClassement';
-import { PageHero, Section, Surtitre, Vide } from '@/components/ui';
+import { Chevron, Section, TitrePage, Vide } from '@/components/ui';
 import { getClassements, getEquipesClub } from '@/lib/api';
 import { competitionsEquipe } from '@/lib/format';
 import type { LigneClassement } from '@/lib/types';
@@ -16,27 +16,27 @@ export default async function ClassementsPage() {
 
   return (
     <>
-      <PageHero surtitre="Saison en cours" titre="Classements">
+      <TitrePage titre="Classements">
         Mis à jour automatiquement depuis le site de la Fédération Française de Handball.
-      </PageHero>
+      </TitrePage>
       <Section>
         {parChampionnat.size === 0 && (
           <Vide titre="Classements bientôt disponibles" action={{ href: '/calendrier', label: 'Voir le calendrier' }}>
             Les classements apparaîtront après les premières journées de championnat.
           </Vide>
         )}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-10">
           {[...parChampionnat.entries()].map(([id, liste]) => {
             const champ = liste[0].championnat;
             const nos = equipes.filter((e) => competitionsEquipe(e).some((c) => c.id === id));
             return (
               <div key={id} className="min-w-0">
-                <Surtitre className="text-violet mb-3">{champ.niveau || 'Championnat'}</Surtitre>
-                <h2 className="font-display text-3xl md:text-4xl uppercase leading-[1.02]">{champ.nom}</h2>
-                <p className="flex flex-wrap gap-2 mt-3 mb-6">
+                <h2 className="font-display text-xl md:text-2xl uppercase leading-tight text-bande border-b-2 border-bande pb-1">{champ.nom}</h2>
+                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 mb-3 text-[14px]">
+                  {champ.niveau && <span className="text-encre/80">{champ.niveau}</span>}
                   {nos.map((e) => (
-                    <Link key={e.id} href={`/equipes/${e.id}`} className="inline-flex items-center gap-1.5 bg-papier hover:bg-roi hover:text-white transition-colors px-3 py-1 text-sm font-semibold text-roi">
-                      {e.nom} <span aria-hidden>→</span>
+                    <Link key={e.id} href={`/equipes/${e.id}#classement`} className="inline-flex items-center gap-1.5 font-semibold text-bande-fonce hover:underline">
+                      {e.nom}<Chevron className="w-1.5 h-2.5" />
                     </Link>
                   ))}
                 </p>

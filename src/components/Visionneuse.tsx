@@ -39,7 +39,7 @@ export default function Visionneuse({ photos }: { photos: Photo[] }) {
       <div className="columns-2 md:columns-3 lg:columns-4 gap-3 [&>*]:mb-3">
         {photos.map((p, i) => (
           <button key={p.id} type="button" onClick={() => setIndex(i)} className="block w-full group relative overflow-hidden break-inside-avoid" aria-label={p.legende ?? `Photo ${i + 1}`}>
-            <ImageContenu src={p.url} alt={p.legende ?? ''} width={800} height={600} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" className="w-full h-auto group-hover:scale-105 transition-transform duration-500" />
+            <ImageContenu src={p.url} alt={p.legende ?? ''} width={800} height={600} sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" className="w-full h-auto " />
           </button>
         ))}
       </div>
@@ -62,7 +62,7 @@ export default function Visionneuse({ photos }: { photos: Photo[] }) {
           <figure className="max-w-[92vw] max-h-[88vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <ImageContenu key={courante.id} src={courante.url} alt={courante.legende ?? ''} width={1920} height={1440} sizes="92vw" loading="eager" className="w-auto h-auto max-w-full max-h-[80vh] object-contain shadow-2xl" />
             <figcaption className="text-white/80 mt-4 text-center">
-              {courante.legende} <span className="font-mono text-xs text-white/40 ml-2">{index! + 1} / {photos.length}</span>
+              {courante.legende} <span className="text-xs text-white/70 ml-2">{index! + 1} / {photos.length}</span>
             </figcaption>
           </figure>
           <button ref={refFermer} type="button" aria-label="Fermer" onClick={() => setIndex(null)} className="absolute top-4 right-5 text-white text-4xl leading-none p-2 hover:text-jaune">×</button>

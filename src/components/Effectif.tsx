@@ -1,6 +1,7 @@
 import type { StatJoueur } from '@/lib/stats';
 import type { Joueur, Poste } from '@/lib/types';
 import ImageContenu from '@/components/ImageContenu';
+import Logo from '@/components/Logo';
 
 const GROUPES: [string, Poste[]][] = [
   ['Gardiens', ['gardien']],
@@ -22,23 +23,24 @@ export const POSTES: Record<Poste, string> = {
 
 function CarteJoueur({ j, stat }: { j: Joueur; stat?: StatJoueur }) {
   return (
-    <article className="group relative bg-nuit text-white overflow-hidden aspect-[3/4] flex flex-col">
-      {j.photo ? (
-        <ImageContenu src={j.photo} alt="" fill sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" />
-      ) : (
-        <span aria-hidden className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 w-2/3 aspect-square rotate-45 bg-losange opacity-60 group-hover:opacity-90 transition-opacity" />
-      )}
-      <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-nuit via-nuit/40 to-transparent" />
-      {j.numero != null && (
-        <span className="relative font-display text-5xl md:text-6xl leading-none p-4 text-white/90 drop-shadow">{j.numero}</span>
-      )}
-      <div className="relative mt-auto p-4">
-        {j.capitaine && <span className="inline-block bg-jaune text-nuit font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 mb-2">Capitaine</span>}
-        <p className="font-display text-lg md:text-xl uppercase leading-tight">{j.nomAffiche}</p>
-        {j.poste && <p className="font-mono text-[11px] uppercase tracking-widest text-glacier mt-1">{POSTES[j.poste]}</p>}
-        {stat && stat.matchs > 0 && (
-          <p className="font-mono text-[11px] text-white/70 mt-1">{stat.buts} but{stat.buts > 1 ? 's' : ''} · {stat.matchs} match{stat.matchs > 1 ? 's' : ''}</p>
+    <article className="border border-filet bg-white flex flex-col">
+      <div className="relative aspect-square sm:aspect-[3/4] bg-papier overflow-hidden">
+        {j.photo ? (
+          <ImageContenu src={j.photo} alt="" fill sizes="(min-width: 1024px) 190px, (min-width: 640px) 33vw, 50vw" className="object-cover object-top" />
+        ) : (
+          <span aria-hidden className="absolute inset-0 flex items-center justify-center opacity-25"><Logo size={70} decoratif /></span>
         )}
+        {j.capitaine && <span className="absolute top-0 left-0 bg-jaune text-nuit font-display uppercase text-[13px] px-2 py-0.5">Capitaine</span>}
+      </div>
+      <div className="p-2.5 flex items-start gap-2.5 border-t-4 border-bande">
+        {j.numero != null && <span className="font-display text-2xl leading-none text-bande">{j.numero}</span>}
+        <div className="min-w-0">
+          <p className="font-display uppercase text-nuit leading-tight">{j.nomAffiche}</p>
+          {j.poste && <p className="text-[12.5px] text-encre/75">{POSTES[j.poste]}</p>}
+          {stat && stat.matchs > 0 && (
+            <p className="text-[12.5px] text-encre/75">{stat.buts} but{stat.buts > 1 ? 's' : ''} · {stat.matchs} match{stat.matchs > 1 ? 's' : ''}</p>
+          )}
+        </div>
       </div>
     </article>
   );
@@ -58,11 +60,11 @@ export default function Effectif({ joueurs, stats = [] }: { joueurs: Joueur[]; s
   if (autres.length) blocs.push([autres.length === joueurs.length ? 'Joueurs' : 'Polyvalents', autres]);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {blocs.filter(([, l]) => l.length).map(([titre, liste]) => (
         <div key={titre}>
-          <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-violet mb-4">{titre}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <h3 className="font-display uppercase text-xl text-nuit mb-3">{titre}</h3>
+          <div className="grid grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
             {liste.map((j) => <CarteJoueur key={j.id} j={j} stat={statDe(j.id)} />)}
           </div>
         </div>

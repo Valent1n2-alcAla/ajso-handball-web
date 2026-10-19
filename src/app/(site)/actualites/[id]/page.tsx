@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Section } from '@/components/ui';
-import { getActualite } from '@/lib/api';
-import { extrait, formatDatePub } from '@/lib/format';
+import { CONTENEUR, TitrePage } from '@/components/ui';
+import { getActualite, getActualites } from '@/lib/api';
+import { extrait, formatDatePub, FUSEAU } from '@/lib/format';
 import ImageContenu from '@/components/ImageContenu';
 
 export async function generateMetadata({ params }: PageProps<'/actualites/[id]'>): Promise<Metadata> {
@@ -19,28 +19,41 @@ export async function generateMetadata({ params }: PageProps<'/actualites/[id]'>
 }
 
 export default async function ActualitePage({ params }: PageProps<'/actualites/[id]'>) {
-  const a = await getActualite((await params).id);
+  const { id } = await params;
+  const [a, toutes] = await Promise.all([getActualite(id), getActualites()]);
   if (!a) notFound();
+  const autres = toutes.filter((x) => x.id !== a.id).slice(0, 6);
+  const date = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', timeZone: FUSEAU });
 
   return (
-    <article>
-      <header className="bg-nuit text-white motif-losanges">
-        <div className="max-w-4xl mx-auto px-4 md:px-10 pt-14 pb-16">
-          <Link href="/actualites" className="font-mono text-xs uppercase tracking-widest text-glacier hover:text-jaune">← Actualités</Link>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-jaune mt-8 mb-4">{formatDatePub(a.datePub)}</p>
-          <h1 className="font-display text-4xl md:text-7xl uppercase leading-[1.02]">{a.titre}</h1>
-        </div>
-      </header>
-      {a.image && (
-        <div className="max-w-5xl mx-auto px-4 md:px-10 -mb-8 relative">
-          <ImageContenu src={a.image} alt="" width={1600} height={900} preload sizes="(min-width: 1024px) 1024px, 100vw" className="w-full aspect-[16/9] object-cover -mt-0 md:mt-10 shadow-xl" />
-        </div>
-      )}
-      <Section className="max-w-3xl!">
-        <div className="text-lg leading-relaxed text-nuit/85 space-y-5">
-          {a.contenu.split(/\n{2,}/).map((p, i) => <p key={i} className="whitespace-pre-line">{p}</p>)}
-        </div>
-      </Section>
-    </article>
+    <>
+      <TitrePage titre={a.titre} retour={{ href: '/actualites', label: 'Actualités' }} />
+      <div className={`${CONTENEUR} pt-4 grid gap-10 lg:grid-cols-[minmax(0,1fr)_270px]`}>
+        <article>
+          <p className="text-[13px] text-bande-fonce font-semibold">Publié le <time dateTime={a.datePub}>{formatDatePub(a.datePub)}</time></p>
+          {a.image && (
+            <ImageContenu src={a.image} alt="" width={1600} height={900} preload sizes="(min-width: 1170px) 840px, 100vw" className="w-full h-auto mt-4" />
+          )}
+          <div className="texte-article mt-5 text-[15px] leading-relaxed text-encre max-w-3xl">
+            {a.contenu.split(/\n{2,}/).map((p, i) => <p key={i} className="whitespace-pre-line">{p}</p>)}
+          </div>
+        </article>
+        {autres.length > 0 && (
+          <aside aria-labelledby="titre-fil">
+            <h2 id="titre-fil" className="font-display text-[1.75rem] uppercase leading-tight text-bande mb-4">Fil infos</h2>
+            <ul className="border-t border-filet">
+              {autres.map((x) => (
+                <li key={x.id} className="border-b border-filet">
+                  <Link href={`/actualites/${x.id}`} className="flex gap-3 py-3 text-[14px] hover:text-bande-fonce group">
+                    <time dateTime={x.datePub} className="shrink-0 tabular-nums">{date(x.datePub)}</time>
+                    <span className="truncate group-hover:underline">{x.titre}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
+    </>
   );
 }
