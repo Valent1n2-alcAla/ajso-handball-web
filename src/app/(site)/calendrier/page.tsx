@@ -3,15 +3,18 @@ import Link from 'next/link';
 import { LigneMatch } from '@/components/Match';
 import { PageHero, Section, Vide } from '@/components/ui';
 import { getDerniersResultats, getEquipesClub, getProchainsMatchs } from '@/lib/api';
-import { parseDate } from '@/lib/format';
+import { FUSEAU, parseDate } from '@/lib/format';
 import type { Rencontre } from '@/lib/types';
 
-export const metadata: Metadata = { title: 'Calendrier & résultats' };
+export const metadata: Metadata = {
+  title: 'Calendrier & résultats',
+  description: "Prochains matchs et derniers résultats de toutes les équipes de l'AJS Ouistreham Handball : dates, horaires, lieux et scores.",
+};
 
 function parMois(matchs: Rencontre[]) {
   const mois = new Map<string, Rencontre[]>();
   for (const m of matchs) {
-    const cle = parseDate(m.date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const cle = parseDate(m.date).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: FUSEAU });
     mois.set(cle, [...(mois.get(cle) ?? []), m]);
   }
   return [...mois.entries()];
@@ -34,23 +37,23 @@ export default async function CalendrierPage({ searchParams }: PageProps<'/calen
     <>
       <PageHero surtitre="Saison en cours" titre={<>Calendrier <span className="text-jaune">&amp;</span> résultats</>} />
       <Section>
-        <div className="flex flex-wrap gap-2 mb-6" role="tablist">
+        <nav className="flex flex-wrap gap-2 mb-6" aria-label="Vue">
           {[['avenir', 'À venir'], ['resultats', 'Résultats']].map(([v, l]) => (
-            <Link key={v} href={lien(v, equipeId)} role="tab" aria-selected={vue === v}
+            <Link key={v} href={lien(v, equipeId)} aria-current={vue === v ? 'page' : undefined}
               className={`font-display uppercase tracking-wide text-lg px-6 py-3 ${vue === v ? 'bg-nuit text-white' : 'bg-papier hover:bg-nuit/10'}`}>
               {l}
             </Link>
           ))}
-        </div>
-        <div className="flex flex-wrap gap-2 mb-12">
-          <Link href={lien(vue, '')} className={`text-sm px-4 py-2 border ${!equipeId ? 'border-violet bg-violet text-white' : 'border-nuit/15 hover:border-violet'}`}>Toutes</Link>
+        </nav>
+        <nav className="flex flex-wrap gap-2 mb-12" aria-label="Filtrer par équipe">
+          <Link href={lien(vue, '')} aria-current={!equipeId ? 'page' : undefined} className={`text-sm px-4 py-2 border ${!equipeId ? 'border-violet bg-violet text-white' : 'border-nuit/15 hover:border-violet'}`}>Toutes</Link>
           {equipes.map((e) => (
-            <Link key={e.id} href={lien(vue, String(e.id))}
+            <Link key={e.id} href={lien(vue, String(e.id))} aria-current={equipeId === String(e.id) ? 'page' : undefined}
               className={`text-sm px-4 py-2 border ${equipeId === String(e.id) ? 'border-violet bg-violet text-white' : 'border-nuit/15 hover:border-violet'}`}>
               {e.nom}
             </Link>
           ))}
-        </div>
+        </nav>
 
         {matchs.length === 0 ? (
           <Vide>{vue === 'resultats' ? 'Aucun résultat pour le moment.' : 'Aucun match programmé.'}</Vide>
