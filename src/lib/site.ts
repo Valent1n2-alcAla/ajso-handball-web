@@ -19,6 +19,7 @@ export const NAV_CLUB: LienNav[] = [
   { href: '/club', label: 'Présentation' },
   { href: '/entrainements', label: 'Entraînements' },
   { href: '/inscriptions', label: 'Inscriptions' },
+  { href: '/benevoles', label: 'Bénévoles' },
   { href: '/boutique', label: 'Boutique' },
   { href: '/partenaires', label: 'Partenaires' },
   { href: '/contact', label: 'Contact' },
