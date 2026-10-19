@@ -1,5 +1,6 @@
 import type { StatJoueur } from '@/lib/stats';
 import type { Joueur, Poste } from '@/lib/types';
+import ImageContenu from '@/components/ImageContenu';
 
 const GROUPES: [string, Poste[]][] = [
   ['Gardiens', ['gardien']],
@@ -23,8 +24,7 @@ function CarteJoueur({ j, stat }: { j: Joueur; stat?: StatJoueur }) {
   return (
     <article className="group relative bg-nuit text-white overflow-hidden aspect-[3/4] flex flex-col">
       {j.photo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={j.photo} alt="" className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
+        <ImageContenu src={j.photo} alt="" fill sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw" className="object-cover object-top group-hover:scale-105 transition-transform duration-500" />
       ) : (
         <span aria-hidden className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 w-2/3 aspect-square rotate-45 bg-losange opacity-60 group-hover:opacity-90 transition-opacity" />
       )}

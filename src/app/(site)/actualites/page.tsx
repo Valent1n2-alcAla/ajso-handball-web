@@ -3,8 +3,12 @@ import Link from 'next/link';
 import { PageHero, Section, Vide } from '@/components/ui';
 import { getActualites } from '@/lib/api';
 import { extrait, formatDatePub } from '@/lib/format';
+import ImageContenu from '@/components/ImageContenu';
 
-export const metadata: Metadata = { title: 'Actualités' };
+export const metadata: Metadata = {
+  title: 'Actualités',
+  description: "Toute l'actualité de l'AJS Ouistreham Handball : comptes rendus de matchs, vie du club, événements et annonces.",
+};
 
 export default async function ActualitesPage() {
   const actus = await getActualites();
@@ -19,8 +23,7 @@ export default async function ActualitesPage() {
             <Link href={`/actualites/${une.id}`} className="group grid md:grid-cols-2 gap-8 items-center mb-16">
               <div className="aspect-[16/10] bg-losange overflow-hidden relative">
                 {une.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={une.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <ImageContenu src={une.image} alt="" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : <span className="absolute inset-0 flex items-center justify-center font-display text-8xl text-white/15">AJSO</span>}
               </div>
               <div>

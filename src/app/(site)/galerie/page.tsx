@@ -3,8 +3,12 @@ import Link from 'next/link';
 import { PageHero, Section, Vide } from '@/components/ui';
 import { getAlbums } from '@/lib/api';
 import { formatDateLongue } from '@/lib/format';
+import ImageContenu from '@/components/ImageContenu';
 
-export const metadata: Metadata = { title: 'Galerie photos' };
+export const metadata: Metadata = {
+  title: 'Galerie photos',
+  description: "Albums photos de l'AJS Ouistreham Handball : matchs, tournois et moments forts de la vie du club.",
+};
 
 export default async function GaleriePage() {
   const albums = await getAlbums();
@@ -18,8 +22,7 @@ export default async function GaleriePage() {
               <Link key={a.id} href={`/galerie/${a.id}`} className="group block">
                 <div className="aspect-[4/3] bg-losange overflow-hidden relative">
                   {a.couverture ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={a.couverture} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <ImageContenu src={a.couverture} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : <span className="absolute inset-0 flex items-center justify-center font-display text-6xl text-white/15">AJSO</span>}
                   <span className="absolute bottom-3 right-3 bg-nuit/80 text-white font-mono text-xs px-2.5 py-1">{a.nombrePhotos} photo{a.nombrePhotos > 1 ? 's' : ''}</span>
                 </div>

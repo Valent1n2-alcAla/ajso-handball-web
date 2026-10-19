@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { BoutonLien, PageHero, Section, Vide } from '@/components/ui';
 import { getClub, getProduits } from '@/lib/api';
 import { formatPrix } from '@/lib/format';
+import ImageContenu from '@/components/ImageContenu';
 
 export const metadata: Metadata = { title: 'Boutique', description: "Maillots, sweats et goodies aux couleurs de l'AJSO Handball." };
 
@@ -33,8 +34,7 @@ export default async function BoutiquePage() {
                 <article key={p.id} className={`bg-papier flex flex-col ${p.disponible ? '' : 'opacity-60'}`}>
                   <div className="aspect-square bg-white relative overflow-hidden flex items-center justify-center">
                     {p.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.image} alt={p.nom} className="w-full h-full object-contain" />
+                      <ImageContenu src={p.image} alt={p.nom} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-contain" />
                     ) : (
                       <span className="w-1/2 aspect-square rotate-45 bg-losange opacity-20" />
                     )}

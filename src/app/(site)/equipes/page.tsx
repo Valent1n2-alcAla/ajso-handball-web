@@ -5,6 +5,7 @@ import { PageHero, Section, Vide } from '@/components/ui';
 import { getClassements, getDerniersResultats, getEquipesClub } from '@/lib/api';
 import { bilan } from '@/lib/stats';
 import type { Equipe } from '@/lib/types';
+import ImageContenu from '@/components/ImageContenu';
 
 export const metadata: Metadata = { title: 'Équipes', description: "Toutes les équipes de l'AJSO Handball, de l'école de hand aux seniors." };
 
@@ -44,8 +45,7 @@ export default async function EquipesPage() {
                   return (
                     <Link key={e.id} href={`/equipes/${e.id}`} className="group relative bg-nuit text-white overflow-hidden min-h-[300px] flex flex-col">
                       {e.photo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={e.photo} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition duration-500" />
+                        <ImageContenu src={e.photo} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition duration-500" />
                       ) : (
                         <span aria-hidden className="absolute -right-16 -top-16 w-56 h-56 rotate-45 bg-losange opacity-40 group-hover:opacity-80 transition-opacity duration-500" />
                       )}

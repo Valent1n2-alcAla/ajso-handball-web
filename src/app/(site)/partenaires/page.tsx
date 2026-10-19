@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import { BoutonLien, PageHero, Section, Vide } from '@/components/ui';
 import { getPartenaires } from '@/lib/api';
 import type { Partenaire } from '@/lib/types';
+import ImageContenu from '@/components/ImageContenu';
 
-export const metadata: Metadata = { title: 'Partenaires' };
+export const metadata: Metadata = {
+  title: 'Partenaires',
+  description: "Les partenaires et soutiens de l'AJS Ouistreham Handball, et comment devenir partenaire du club.",
+};
 
 const NIVEAUX: [Partenaire['niveau'], string][] = [
   ['principal', 'Partenaires principaux'],
@@ -16,8 +20,7 @@ function CartePartenaire({ p, grand }: { p: Partenaire; grand: boolean }) {
     <>
       <div className={`flex items-center justify-center ${grand ? 'h-28' : 'h-20'}`}>
         {p.logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.logo} alt={p.nom} className="max-h-full w-auto object-contain" />
+          <ImageContenu src={p.logo} alt={p.nom} width={480} height={224} sizes="(min-width: 768px) 25vw, 50vw" className="max-h-full w-auto object-contain" />
         ) : (
           <span className="font-display text-2xl uppercase text-center">{p.nom}</span>
         )}

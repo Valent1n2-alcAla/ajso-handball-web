@@ -5,6 +5,7 @@ import { CarteMatch, LigneMatch } from '@/components/Match';
 import { BoutonLien, Section, Vide } from '@/components/ui';
 import { getActualites, getDerniersResultats, getEquipesClub, getEvenements, getPartenaires, getProchainsMatchs } from '@/lib/api';
 import { extrait, formatDatePub } from '@/lib/format';
+import ImageContenu from '@/components/ImageContenu';
 
 export default async function Accueil() {
   const [equipes, prochains, resultats, actus, partenaires, evenements] = await Promise.all([
@@ -123,8 +124,7 @@ export default async function Accueil() {
               <Link key={a.id} href={`/actualites/${a.id}`} className="group block">
                 <div className={`aspect-[16/10] mb-5 overflow-hidden relative ${i === 0 ? 'bg-losange' : 'bg-nuit'}`}>
                   {a.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={a.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <ImageContenu src={a.image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <span className="absolute inset-0 flex items-center justify-center font-display text-6xl text-white/10">AJSO</span>
                   )}
@@ -160,8 +160,7 @@ export default async function Accueil() {
             {partenaires.map((p) => (
               <div key={p.id} className="border border-nuit/10 px-6 py-4 min-h-20 flex items-center">
                 {p.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.logo} alt={p.nom} className="max-h-12 w-auto" />
+                  <ImageContenu src={p.logo} alt={p.nom} width={240} height={96} sizes="240px" className="max-h-12 w-auto" />
                 ) : (
                   <span className="font-display uppercase text-lg text-nuit/70">{p.nom}</span>
                 )}
