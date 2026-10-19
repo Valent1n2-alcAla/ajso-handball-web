@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    env:
+      # API fictive : le build ne doit pas dépendre de l'API (pages vides si injoignable)
+      API_URL: http://127.0.0.1:9
+      SITE_URL: https://example.org
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      # Types des routes (PageProps, LayoutProps…) générés sans build complet
+      - run: npx next typegen
+      - run: npm run typecheck
+      - run: npm run build
