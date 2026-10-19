@@ -38,7 +38,13 @@ export type Ressource = {
   suppression?: string;
   /** Ressource à exemplaire unique (pas de création ni suppression) */
   unique?: boolean;
+  /** Nom féminin (« Nouvelle convocation ») */
+  feminin?: boolean;
 };
+
+/** « Nouveau match », « Nouvel article », « Nouvelle équipe » */
+export const titreCreation = (r: Ressource) =>
+  `${r.feminin ? 'Nouvelle' : /^[aeiouyéèêh]/i.test(r.singulier) ? 'Nouvel' : 'Nouveau'} ${r.singulier}`;
 
 export const RESSOURCES: Record<string, Ressource> = {
   rencontres: {
@@ -85,6 +91,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/equipes',
     titre: 'Équipes',
     singulier: 'équipe',
+    feminin: true,
     suppression: 'Ses matchs, créneaux et joueurs seront supprimés avec elle.',
     colonnes: [
       { chemin: 'nom', label: 'Nom' },
@@ -169,6 +176,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/categories',
     titre: 'Catégories',
     singulier: 'catégorie',
+    feminin: true,
     colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'tranche.nom', label: 'Tranche' }],
     champs: [
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
@@ -191,6 +199,7 @@ export const RESSOURCES: Record<string, Ressource> = {
     endpoint: '/api/tranches',
     titre: "Tranches d'âge",
     singulier: 'tranche',
+    feminin: true,
     colonnes: [{ chemin: 'nom', label: 'Nom' }, { chemin: 'ageMin', label: 'Âge min' }, { chemin: 'ageMax', label: 'Âge max' }],
     champs: [
       { nom: 'nom', label: 'Nom', type: 'text', requis: true },
@@ -250,6 +259,7 @@ Object.assign(RESSOURCES, {
     endpoint: '/api/classements',
     titre: 'Classements',
     singulier: 'ligne de classement',
+    feminin: true,
     colonnes: [
       { chemin: 'championnat.nom', label: 'Championnat' },
       { chemin: 'position', label: '#' },
@@ -332,6 +342,7 @@ Object.assign(RESSOURCES, {
     endpoint: '/api/convocations',
     titre: 'Convocations',
     singulier: 'convocation',
+    feminin: true,
     colonnes: [
       { chemin: 'rencontre.date', label: 'Match', type: 'date' },
       { chemin: 'rencontre.equipe.nom', label: 'Équipe' },
@@ -352,6 +363,7 @@ Object.assign(RESSOURCES, {
     endpoint: '/api/permanences',
     titre: 'Permanences',
     singulier: 'permanence',
+    feminin: true,
     colonnes: [
       { chemin: 'rencontre.date', label: 'Match', type: 'date' },
       { chemin: 'rencontre.equipe.nom', label: 'Équipe' },

@@ -34,6 +34,7 @@ function CasesMultiples({ nom, options, coches: initiales, filtre }: { nom: stri
     <div className="border border-nuit/15 bg-white">
       <div className="p-3 max-h-72 overflow-y-auto space-y-3">
         {options.length === 0 && <p className="text-sm text-nuit/50">Aucun choix disponible.</p>}
+        {options.length > 0 && masques === options.length && <p className="text-sm text-nuit/50">Aucun joueur dans l&apos;effectif de cette équipe.</p>}
         {grouper(options).map(([groupe, opts]) => {
           const affiches = opts.filter(visible);
           if (!affiches.length) return null;

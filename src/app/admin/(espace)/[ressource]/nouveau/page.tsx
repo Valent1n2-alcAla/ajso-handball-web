@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { enregistrer } from '../../../actions';
 import FormulaireRessource from '@/components/admin/FormulaireRessource';
+import { titreCreation } from '@/lib/admin-ressources';
 import { chargerOptions, ressourceOu404, valeursInitiales } from '../commun';
 
 export default async function NouveauPage({ params, searchParams }: PageProps<'/admin/[ressource]/nouveau'>) {
@@ -12,7 +13,7 @@ export default async function NouveauPage({ params, searchParams }: PageProps<'/
   return (
     <>
       <Link href={`/admin/${cle}`} className="font-mono text-xs uppercase tracking-widest text-violet">← {r.titre}</Link>
-      <h1 className="font-display text-4xl uppercase mt-2 mb-8">Nouveau {r.singulier}</h1>
+      <h1 className="font-display text-4xl uppercase mt-2 mb-8">{titreCreation(r)}</h1>
       <div className="bg-white p-6 md:p-8 max-w-4xl">
         <FormulaireRessource champs={r.champs} valeurs={{
           ...valeursInitiales(r, null),
